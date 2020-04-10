@@ -7,36 +7,38 @@ var context = canvas.getContext('2d');
 canvas.width = 800;
 canvas.height = 600;
 
-// class Player {
-//   constructor() {
-//     // Base
-//     this.name = "Player";
-//     this.x = 300;
-//     this.y = 300;
+class Player {
+  constructor() {
+    // Base
+    this.name = "Player";
+    this.x = 300;
+    this.y = 300;
 
-//     // Movement state
-//     this.up = false;
-//     this.down = false;
-//     this.left = false;
-//     this.right = false;
-//   }
+    // Movement state
+    this.movement = {
+      up: false,
+      down: false,
+      left: false,
+      right: false
+    };
+  }
 
-//   moveLeft() {
-//     this.x -= 5;
-//   }
+  moveLeft() {
+    this.x -= 5;
+  }
 
-//   moveRight() {
-//     this.x += 5;
-//   }
+  moveRight() {
+    this.x += 5;
+  }
 
-//   moveDown() {
-//     this.y -= 5;
-//   }
+  moveDown() {
+    this.y -= 5;
+  }
 
-//   moveUp() {
-//     this.y += 5;
-//   }
-// }
+  moveUp() {
+    this.y += 5;
+  }
+}
 
 var movement = {
     up: false,
@@ -90,7 +92,7 @@ socket.on('state', function(players) {
   context.clearRect(0, 0, canvas.width, canvas.height);
 
   // Draw players
-  context.fillStyle = 'green';
+  context.fillStyle = 'red';
   for (var id in players) {
     var player = players[id];
     context.beginPath();

@@ -11,16 +11,20 @@ var io = socketIO(server);
 
 // Server
 const loadServer = () => {
+  // Set port for Heroku
   let port = process.env.PORT;
   if (port == null || port == "") {
     port = 5000;
   }
   app.set('port', port);
-  app.use('/static', express.static(__dirname + '/static'));
+
+  app.use(express.static(path.join(__dirname, '../..')));
+
   // Routing
   app.get('/', function(request, response) {
-      response.sendFile(path.join(__dirname, 'index.html'));
+      response.sendFile(path.join(__dirname, '../client/html/index.html'));
     });
+
   // Starts the server.
   server.listen(port, function() {
       console.log(`Starting server on port ${port}`);
