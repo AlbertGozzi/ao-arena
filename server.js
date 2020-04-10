@@ -11,15 +11,19 @@ var io = socketIO(server);
 
 // Server
 const loadServer = () => {
-  app.set('port', 5000);
+  let port = process.env.PORT;
+  if (port == null || port == "") {
+    port = 5000;
+  }
+  app.set('port', port);
   app.use('/static', express.static(__dirname + '/static'));
   // Routing
   app.get('/', function(request, response) {
       response.sendFile(path.join(__dirname, 'index.html'));
     });
   // Starts the server.
-  server.listen(5000, function() {
-      console.log('Starting server on port 5000');
+  server.listen(port, function() {
+      console.log(`Starting server on port ${port}`);
   });
   // Add the WebSocket handlers
   io.on('connection', function(socket) {});
