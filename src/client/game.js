@@ -1,46 +1,19 @@
 // Socket IO
-var socket = io();
+let socket = io();
 
 // Main Code
-var canvas = document.getElementById('canvas');
-var context = canvas.getContext('2d');
-canvas.width = 800;
-canvas.height = 600;
+let canvas = document.getElementById('canvas');
+let context = canvas.getContext('2d');
 
-class Player {
-  constructor() {
-    // Base
-    this.name = "Player";
-    this.x = 300;
-    this.y = 300;
+// Reset size of canvas
+const updateCanvas = () => {
+  canvas.width = document.documentElement.clientWidth * 0.75;
+  canvas.height = document.documentElement.clientHeight * 0.75;
+};
+updateCanvas();
 
-    // Movement state
-    this.movement = {
-      up: false,
-      down: false,
-      left: false,
-      right: false
-    };
-  }
-
-  moveLeft() {
-    this.x -= 5;
-  }
-
-  moveRight() {
-    this.x += 5;
-  }
-
-  moveDown() {
-    this.y -= 5;
-  }
-
-  moveUp() {
-    this.y += 5;
-  }
-}
-
-var movement = {
+// Update movement on A, S, W, D
+let movement = {
     up: false,
     down: false,
     left: false,
@@ -63,40 +36,87 @@ document.addEventListener('keydown', function(event) {
       break;
   }   
 });
-document.addEventListener('keyup', function(event) {
-  switch (event.keyCode) {
-      case 65: // A
-        movement.left = false;
-        break;
-      case 87: // W
-        movement.up = false;
-        break;
-      case 68: // D
-        movement.right = false;
-        break;
-      case 83: // S
-        movement.down = false;
-        break;
-  }
-});
+
+
+// Print to game console
+let gameConsole = document.querySelector('#game-console');
+let gameConsoleNumMessages = Math.floor(gameConsole.clientHeight / 18); // TODO replace for font size
+let gameConsoleUlArray = [];
+
+const drawConsoleLog = () => {
+  gameConsole.innerHTML = "";
+  gameConsoleUlArray.forEach((li) => {
+    gameConsole.append(li);
+  });
+};
+
+const gameConsoleLog = (message) => {
+  let newLi = document.createElement('li');
+  newLi.innerHTML = message;
+  gameConsoleUlArray.push(newLi);
+  if (gameConsoleUlArray.length > gameConsoleNumMessages) { gameConsoleUlArray.shift(); }
+  drawConsoleLog();
+};
+
+
+// Load maps
+let map = new Image ();
+map.src = "/public/assets/14.png";
+const drawMap = (deltaX, deltaY) => {
+  let mapWidth = Math.floor(document.documentElement.clientWidth * 0.02) * 100;
+  let mapHeight = mapWidth;
+  context.drawImage(map, deltaX, deltaY, mapWidth, mapHeight);
+};
+
+
 
 // Send messages to server
 socket.emit('new player');
 setInterval(function() {
+  // Pass movement
   socket.emit('movement', movement);
-}, 1000 / 60);
+  // Reset movement
+  movement = {
+    up: false,
+    down: false,
+    left: false,
+    right: false
+  };
+}, 1000 / 60 * 5 );
 
 // Receive state from server and update
 socket.on('state', function(players) {
   // Reset canvas
   context.clearRect(0, 0, canvas.width, canvas.height);
+  updateCanvas();
+
+  // Console logs
+  function printMousePos(event) { console.log(`clientX: ${event.clientX} clientY: ${event.clientY}`); }
+  document.addEventListener("click", printMousePos);
+
+  // DOM Manipulation
+  drawConsoleLog();
+
+  // Draw canvas
+  // Define player size 
+  let playerSize = Math.floor(document.documentElement.clientWidth * 0.02);
+
+  // Get player position
+  let playerX = players[socket.id] ? players[socket.id].x : 0; 
+  let playerY = players[socket.id] ? players[socket.id].y : 0;
+  let deltaX = canvas.width / 2 - playerX;
+  let deltaY = canvas.height / 2 - playerY;
+
+  // Draw map
+  drawMap(deltaX, deltaY);
 
   // Draw players
   context.fillStyle = 'red';
-  for (var id in players) {
-    var player = players[id];
-    context.beginPath();
-    context.arc(player.x, player.y, 10, 0, 2 * Math.PI);
-    context.fill();
+  for (let id in players) {
+    let player = players[id];
+    // console.log(`X: ${player.x}, Y: ${player.y}`);
+    let playerWidth = playerSize;
+    let playerHeight = playerSize;;
+    context.fillRect(player.x + deltaX - playerWidth / 2, player.y + deltaY - playerHeight / 2, playerWidth, playerHeight);
   }
 });

@@ -1,13 +1,13 @@
 // Dependencies
-var express = require('express');
-var http = require('http');
-var path = require('path');
-var socketIO = require('socket.io');
+let express = require('express');
+let http = require('http');
+let path = require('path');
+let socketIO = require('socket.io');
 
 // Renaming
-var app = express();
-var server = http.Server(app);
-var io = socketIO(server);
+let app = express();
+let server = http.Server(app);
+let io = socketIO(server);
 
 // Server
 const loadServer = () => {
@@ -33,9 +33,43 @@ const loadServer = () => {
   io.on('connection', function(socket) {});
 };
 
-// Main Code
+// Class Definitions
+class Player {
+  constructor() {
+    // Base
+    this.name = "Player";
+    this.x = 315;
+    this.y = 315;
+
+    // Movement state
+    this.movement = {
+      up: false,
+      down: false,
+      left: false,
+      right: false
+    };
+  }
+
+  moveLeft() {
+    this.x -= 30;
+  }
+
+  moveRight() {
+    this.x += 30;
+  }
+
+  moveDown() {
+    this.y += 30;
+  }
+
+  moveUp() {
+    this.y -= 30;
+  }
+}
+
+// Execution code
 loadServer();
-var players = {};
+let players = {};
 
 // Send message to client
 setInterval(function() {
@@ -45,17 +79,14 @@ setInterval(function() {
 // Respond to messages
 io.on('connection', function(socket) {
   socket.on('new player', function() {
-    players[socket.id] = {
-      x: 300,
-      y: 300
-    };
+    players[socket.id] = new Player();
   });
 
   socket.on('movement', function(data) {
-    var player = players[socket.id] || {};
-    if (data.left) { player.x -= 5; }    
-    if (data.up) { player.y -= 5; } 
-    if (data.right) { player.x += 5; } 
-    if (data.down) { player.y += 5; }
+    let player = players[socket.id] || {};
+    if (data.left) { player.moveLeft(); }    
+    if (data.up) { player.moveUp(); } 
+    if (data.right) { player.moveRight(); } 
+    if (data.down) { player.moveDown(); }
   });
 });
