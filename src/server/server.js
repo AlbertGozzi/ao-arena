@@ -35,11 +35,13 @@ const loadServer = () => {
 
 // Constants (should be same as game.js)
 const CANVAS_WIDTH_PCT_CLIENTS = 0.75;
-const CANVAS_HEIGHT_PCT_WIDTH = 0.5;
+const CANVAS_HEIGHT_PCT_WIDTH = 0.55;
 const PLAYER_PERCENTAGE_CLIENT_SIZE = 0.02;
 const MAP_SIZE_TILES = 100;
 const GAME_CONSOLE_MAX_MESSAGES = 7;
 
+// Constants (just for server)
+const PLAYER_INITIAL_HEALTH = 100;
 
 // Derived from constants
 let minX = Math.ceil(CANVAS_WIDTH_PCT_CLIENTS / PLAYER_PERCENTAGE_CLIENT_SIZE / 2);
@@ -71,8 +73,21 @@ class Player {
     this.gameConsoleLiArray = [];
 
     // Fighting
-    this.health = 100;
-    this.attackDamage = 5;
+    this.health = PLAYER_INITIAL_HEALTH;
+    this.attackDamage = 30;
+
+    // Stats
+    this.kills = 0;
+    this.deaths = 0;
+  }
+
+  positionRandomly() {
+    let position = {
+      x: MAP_SIZE_TILES / 2 - 10 + Math.ceil(Math.random() * 20),
+      y: MAP_SIZE_TILES / 2 - 10 + Math.ceil(Math.random() * 20)
+    };
+    this.x = position.x;
+    this.y = position.y;
   }
 
   move(direction) {
@@ -116,6 +131,33 @@ class Player {
     }
   }
 
+  attack() {
+    let targetPlayerId = gameState.map.playerIds[this.targetPosition.x][this.targetPosition.y];
+    if (targetPlayerId !== null) {
+      let targetPlayer = gameState.players[targetPlayerId];
+      let randomAttackCoefficient = 0.8 + Math.random() * 0.4;
+      let attackDamage = Math.floor(this.attackDamage * randomAttackCoefficient);
+      targetPlayer.health -= attackDamage;
+
+      // If death, respawn
+      if (targetPlayer.health <= 0) {
+        targetPlayer.gameConsoleLog(`${this.name} attacked you and caused ${attackDamage} points of damage. You're dead!`);
+        this.gameConsoleLog(`You attacked ${targetPlayer.name} and caused ${attackDamage} points of damage. You killed him/her!`);
+
+        // Respawn
+        targetPlayer.positionRandomly();
+        targetPlayer.health = PLAYER_INITIAL_HEALTH;
+        
+        // Update stats
+        targetPlayer.deaths++;
+        this.kills++;
+      } else {
+        this.gameConsoleLog(`You attacked ${targetPlayer.name} and caused ${attackDamage} points of damage.`);
+        targetPlayer.gameConsoleLog(`${this.name} attacked you and caused ${attackDamage} points of damage. New health = ${targetPlayer.health}`);  
+      }
+    }
+  }
+
   gameConsoleLog(message) {
     this.gameConsoleLiArray.push(message);
     if (this.gameConsoleLiArray.length > GAME_CONSOLE_MAX_MESSAGES) { this.gameConsoleLiArray.shift(); }
@@ -146,6 +188,8 @@ setInterval(function() {
 io.on('connection', function(socket) {
   socket.on('new player', function() {
     gameState.players[socket.id] = new Player();
+    gameState.players[socket.id].positionRandomly();
+    console.log(`Connected ${socket.id}`);
   });
 
   socket.on('movement', function(movement) {
@@ -164,16 +208,13 @@ io.on('connection', function(socket) {
     let attackingPlayer = gameState.players[socket.id] || {};
     // Conditional to make sure you perform actions if there is a player and if it wants to attack
     if (attack && gameState.players[socket.id]) { 
-      let targetPlayerId = gameState.map.playerIds[attackingPlayer.targetPosition.x][attackingPlayer.targetPosition.y];
-      if (targetPlayerId !== null) {
-        let targetPlayer = gameState.players[targetPlayerId];
-        let randomAttackCoefficient = 0.8 + Math.random() * 0.4;
-        let attackDamage = attackingPlayer.attackDamage * randomAttackCoefficient
-        targetPlayer.health -= attackDamage;
-        attackingPlayer.gameConsoleLog(`You attacked ${targetPlayer.name} and caused ${attackDamage} points of damage.`);
-        targetPlayer.gameConsoleLog(`${attackingPlayer.name} attacked you and caused ${attackDamage} points of damage. New health = ${targetPlayer.health}`);
-      }
+      attackingPlayer.attack();
     }    
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log(`Disconnected ${socket.id}`);
+    delete gameState.players[socket.id];
   });
 
 });

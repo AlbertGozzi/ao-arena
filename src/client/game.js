@@ -36,10 +36,7 @@ document.addEventListener('keydown', (event) => {
 // Attack on ctrl
 let attack = false;
 document.addEventListener('keyup', (event) => {
-  console.log(`Listening`);
-  console.log(`Before ${attack}`);
   if (event.keyCode === 17) { attack = true; }
-  console.log(`After ${attack}`);
 });
 
 ////////////////// Printing to in-game console //////////////////
