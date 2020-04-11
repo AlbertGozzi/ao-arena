@@ -42,6 +42,7 @@ const GAME_CONSOLE_MAX_MESSAGES = 7;
 
 // Constants (just for server)
 const PLAYER_INITIAL_HEALTH = 100;
+const PLAYER_ATTACK_DAMAGE = 30;
 
 // Derived from constants
 let minX = Math.ceil(CANVAS_WIDTH_PCT_CLIENTS / PLAYER_PERCENTAGE_CLIENT_SIZE / 2);
@@ -74,7 +75,7 @@ class Player {
 
     // Fighting
     this.health = PLAYER_INITIAL_HEALTH;
-    this.attackDamage = 30;
+    this.attackDamage = PLAYER_ATTACK_DAMAGE;
 
     // Stats
     this.kills = 0;

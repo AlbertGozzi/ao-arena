@@ -100,7 +100,7 @@ setInterval(function() {
   // Pass and reset movement
   socket.emit('movement', movement);
   movement = '';
-}, 1000 / 60 * 5 );
+}, 180 );
 
 // Receive state from server and update
 socket.on('state', function(gameState) {
