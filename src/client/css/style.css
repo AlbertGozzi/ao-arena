@@ -1,5 +1,9 @@
-* {
+/* * {
     border: 1px solid red;
+} */
+
+body {
+    background-image: url(/public/assets/High-Res-Wood-Background-Wallpaper.jpg) 
 }
 
 ul {
@@ -14,6 +18,8 @@ ul {
     height: 20vh;
 
     list-style-type: none;
+    border: 1px solid black;
+
 }
 
 canvas {

@@ -33,13 +33,26 @@ const loadServer = () => {
   io.on('connection', function(socket) {});
 };
 
+// Constants (should be same as game.js)
+const CANVAS_WIDTH_PCT_CLIENTS = 0.75;
+const CANVAS_HEIGHT_PCT_WIDTH = 0.52;
+const PLAYER_PERCENTAGE_CLIENT_SIZE = 0.02;
+const MAP_SIZE_TILES = 100;
+
+// Derived from constants
+let minX = Math.ceil(CANVAS_WIDTH_PCT_CLIENTS / PLAYER_PERCENTAGE_CLIENT_SIZE / 2);
+let maxX = MAP_SIZE_TILES - minX;
+let minY = Math.ceil(CANVAS_WIDTH_PCT_CLIENTS / PLAYER_PERCENTAGE_CLIENT_SIZE * CANVAS_HEIGHT_PCT_WIDTH / 2);
+let maxY = MAP_SIZE_TILES - minY;
+
+
 // Class Definitions
 class Player {
   constructor() {
     // Base
     this.name = "Player";
-    this.x = 315;
-    this.y = 315;
+    this.x = MAP_SIZE_TILES / 2;
+    this.y = MAP_SIZE_TILES / 2;
 
     // Movement state
     this.movement = {
@@ -51,39 +64,49 @@ class Player {
   }
 
   moveLeft() {
-    this.x -= 30;
+    if (this.x !== minX) {this.x -= 1;}
   }
 
   moveRight() {
-    this.x += 30;
+    if (this.x !== maxX) {this.x += 1;}
   }
 
   moveDown() {
-    this.y += 30;
+    if (this.y !== maxY) {this.y += 1;}
   }
 
   moveUp() {
-    this.y -= 30;
+    if (this.y !== minY) {this.y -= 1;}
+  }
+}
+
+class State {
+  constructor() {
+    this.players = {};
+    this.map = {
+      blockedPositions: new Array(MAP_SIZE_TILES).fill(0).map(() => new Array(MAP_SIZE_TILES).fill(false)),
+    };
   }
 }
 
 // Execution code
 loadServer();
-let players = {};
+let gameState = new State();
 
+////////////////// Server <> Client //////////////////
 // Send message to client
 setInterval(function() {
-    io.sockets.emit('state', players);
+    io.sockets.emit('state', gameState);
   }, 1000 / 60);
   
 // Respond to messages
 io.on('connection', function(socket) {
   socket.on('new player', function() {
-    players[socket.id] = new Player();
+    gameState.players[socket.id] = new Player();
   });
 
   socket.on('movement', function(data) {
-    let player = players[socket.id] || {};
+    let player = gameState.players[socket.id] || {};
     if (data.left) { player.moveLeft(); }    
     if (data.up) { player.moveUp(); } 
     if (data.right) { player.moveRight(); } 

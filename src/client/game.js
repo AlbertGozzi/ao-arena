@@ -1,14 +1,20 @@
 // Socket IO
 let socket = io();
 
+// Constants (should be same as server.js)
+const CANVAS_WIDTH_PCT_CLIENTS = 0.75;
+const CANVAS_HEIGHT_PCT_WIDTH = 0.52;
+const PLAYER_PERCENTAGE_CLIENT_SIZE = 0.02;
+const MAP_SIZE_TILES = 100;
+
 // Main Code
 let canvas = document.getElementById('canvas');
 let context = canvas.getContext('2d');
 
 // Reset size of canvas
 const updateCanvas = () => {
-  canvas.width = document.documentElement.clientWidth * 0.75;
-  canvas.height = document.documentElement.clientHeight * 0.75;
+  canvas.width = document.documentElement.clientWidth * CANVAS_WIDTH_PCT_CLIENTS;
+  canvas.height = canvas.width * CANVAS_HEIGHT_PCT_WIDTH;
 };
 updateCanvas();
 
@@ -63,13 +69,13 @@ const gameConsoleLog = (message) => {
 let map = new Image ();
 map.src = "/public/assets/14.png";
 const drawMap = (deltaX, deltaY) => {
-  let mapWidth = Math.floor(document.documentElement.clientWidth * 0.02) * 100;
+  let mapWidth = document.documentElement.clientWidth * PLAYER_PERCENTAGE_CLIENT_SIZE * MAP_SIZE_TILES;
   let mapHeight = mapWidth;
   context.drawImage(map, deltaX, deltaY, mapWidth, mapHeight);
 };
 
 
-
+////////////////// Server <> Client //////////////////
 // Send messages to server
 socket.emit('new player');
 setInterval(function() {
@@ -85,7 +91,7 @@ setInterval(function() {
 }, 1000 / 60 * 5 );
 
 // Receive state from server and update
-socket.on('state', function(players) {
+socket.on('state', function(gameState) {
   // Reset canvas
   context.clearRect(0, 0, canvas.width, canvas.height);
   updateCanvas();
@@ -99,24 +105,30 @@ socket.on('state', function(players) {
 
   // Draw canvas
   // Define player size 
-  let playerSize = Math.floor(document.documentElement.clientWidth * 0.02);
+  let playerSize = document.documentElement.clientWidth * PLAYER_PERCENTAGE_CLIENT_SIZE;
 
   // Get player position
-  let playerX = players[socket.id] ? players[socket.id].x : 0; 
-  let playerY = players[socket.id] ? players[socket.id].y : 0;
-  let deltaX = canvas.width / 2 - playerX;
-  let deltaY = canvas.height / 2 - playerY;
+  let selfDisplayX = gameState.players[socket.id] ? gameState.players[socket.id].x * playerSize : 0; 
+  let selfDisplayY = gameState.players[socket.id] ? gameState.players[socket.id].y * playerSize : 0;
+  let deltaDisplayX = canvas.width / 2 - selfDisplayX;
+  let deltaDisplayY = canvas.height / 2 - selfDisplayY;
+  // console.log(`X: ${players[socket.id] ? players[socket.id].x : 0}, Y: ${players[socket.id] ? players[socket.id].y : 0}`);
 
   // Draw map
-  drawMap(deltaX, deltaY);
+  drawMap(deltaDisplayX, deltaDisplayY);
 
   // Draw players
   context.fillStyle = 'red';
-  for (let id in players) {
-    let player = players[id];
-    // console.log(`X: ${player.x}, Y: ${player.y}`);
+  for (let id in gameState.players) {
+    let player = gameState.players[id];
+
+    // Get display values
+    let playerDisplayX = player.x * playerSize;
+    let playerDisplayY = player.y * playerSize;
     let playerWidth = playerSize;
-    let playerHeight = playerSize;;
-    context.fillRect(player.x + deltaX - playerWidth / 2, player.y + deltaY - playerHeight / 2, playerWidth, playerHeight);
+    let playerHeight = playerSize;
+
+    // Draw
+    context.fillRect(playerDisplayX + deltaDisplayX, playerDisplayY + deltaDisplayY, playerWidth, playerHeight);
   }
 });
