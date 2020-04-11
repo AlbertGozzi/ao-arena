@@ -11,6 +11,7 @@ ul {
     background-color: black;
     margin: 0;
     padding-left: 1vw;
+    margin: 20px 0px 0px 10px;
 
     font-size: 14px;
 
@@ -24,5 +25,6 @@ ul {
 
 canvas {
     border: 1px solid black;
+    margin-left: 10px;
 }
 

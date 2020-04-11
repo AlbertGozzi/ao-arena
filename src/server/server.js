@@ -35,9 +35,11 @@ const loadServer = () => {
 
 // Constants (should be same as game.js)
 const CANVAS_WIDTH_PCT_CLIENTS = 0.75;
-const CANVAS_HEIGHT_PCT_WIDTH = 0.52;
+const CANVAS_HEIGHT_PCT_WIDTH = 0.5;
 const PLAYER_PERCENTAGE_CLIENT_SIZE = 0.02;
 const MAP_SIZE_TILES = 100;
+const GAME_CONSOLE_MAX_MESSAGES = 7;
+
 
 // Derived from constants
 let minX = Math.ceil(CANVAS_WIDTH_PCT_CLIENTS / PLAYER_PERCENTAGE_CLIENT_SIZE / 2);
@@ -49,34 +51,74 @@ let maxY = MAP_SIZE_TILES - minY;
 // Class Definitions
 class Player {
   constructor() {
-    // Base
+    // Name
     this.name = "Player";
+
+    // Position
     this.x = MAP_SIZE_TILES / 2;
     this.y = MAP_SIZE_TILES / 2;
+    this.potentialX = 0;
+    this.potentialY = 0;
 
-    // Movement state
-    this.movement = {
-      up: false,
-      down: false,
-      left: false,
-      right: false
+    // Movement and face direction
+    this.facing = '';
+    this.targetPosition = {
+      x: 0,
+      y: 0,
     };
+
+    // In-game console messages
+    this.gameConsoleLiArray = [];
+
+    // Fighting
+    this.health = 100;
+    this.attackDamage = 5;
   }
 
-  moveLeft() {
-    if (this.x !== minX) {this.x -= 1;}
+  move(direction) {
+    switch (true) {
+      case (direction === 'left'):
+        // Update face
+        this.facing = 'left';
+
+        // Generate target spot
+        this.potentialX = this.x - 1;
+        // Update position to target if not blocked
+        if (this.x !== minX && !gameState.map.blockedPositions[this.potentialX][this.y]) {this.x = this.potentialX;}
+
+        // Update target position
+        this.targetPosition.x = this.x - 1;
+        this.targetPosition.y = this.y;
+
+        break;
+      case (direction === 'right'):
+        this.facing = 'right';
+        this.potentialX = this.x + 1;
+        if (this.x !== maxX && !gameState.map.blockedPositions[this.potentialX][this.y]) {this.x = this.potentialX;}
+        // Update target position
+        this.targetPosition.x = this.x + 1;
+        this.targetPosition.y = this.y;
+        break;
+      case (direction === 'down'):
+        this.facing = 'down';
+        this.potentialY = this.y + 1;
+        if (this.y !== maxY && !gameState.map.blockedPositions[this.x][this.potentialY]) {this.y = this.potentialY;}
+        this.targetPosition.x = this.x;
+        this.targetPosition.y = this.y + 1;
+        break; 
+      case (direction === 'up'):
+        this.facing = 'up';
+        this.potentialY = this.y - 1;
+        if (this.y !== minY && !gameState.map.blockedPositions[this.x][this.potentialY]) {this.y = this.potentialY;}
+        this.targetPosition.x = this.x;
+        this.targetPosition.y = this.y - 1;
+        break;
+    }
   }
 
-  moveRight() {
-    if (this.x !== maxX) {this.x += 1;}
-  }
-
-  moveDown() {
-    if (this.y !== maxY) {this.y += 1;}
-  }
-
-  moveUp() {
-    if (this.y !== minY) {this.y -= 1;}
+  gameConsoleLog(message) {
+    this.gameConsoleLiArray.push(message);
+    if (this.gameConsoleLiArray.length > GAME_CONSOLE_MAX_MESSAGES) { this.gameConsoleLiArray.shift(); }
   }
 }
 
@@ -85,6 +127,7 @@ class State {
     this.players = {};
     this.map = {
       blockedPositions: new Array(MAP_SIZE_TILES).fill(0).map(() => new Array(MAP_SIZE_TILES).fill(false)),
+      playerIds: new Array(MAP_SIZE_TILES).fill(0).map(() => new Array(MAP_SIZE_TILES).fill(null))
     };
   }
 }
@@ -105,11 +148,32 @@ io.on('connection', function(socket) {
     gameState.players[socket.id] = new Player();
   });
 
-  socket.on('movement', function(data) {
+  socket.on('movement', function(movement) {
     let player = gameState.players[socket.id] || {};
-    if (data.left) { player.moveLeft(); }    
-    if (data.up) { player.moveUp(); } 
-    if (data.right) { player.moveRight(); } 
-    if (data.down) { player.moveDown(); }
+    // Conditional to make sure you perform actions if there is a player
+    if (gameState.players[socket.id]) { 
+      gameState.map.playerIds[player.x][player.y] = null;
+      gameState.map.blockedPositions[player.x][player.y] = false;
+      player.move(movement);
+      gameState.map.playerIds[player.x][player.y] = socket.id;
+      gameState.map.blockedPositions[player.x][player.y] = true;
+    }    
   });
+
+  socket.on('attack', function(attack) {
+    let attackingPlayer = gameState.players[socket.id] || {};
+    // Conditional to make sure you perform actions if there is a player and if it wants to attack
+    if (attack && gameState.players[socket.id]) { 
+      let targetPlayerId = gameState.map.playerIds[attackingPlayer.targetPosition.x][attackingPlayer.targetPosition.y];
+      if (targetPlayerId !== null) {
+        let targetPlayer = gameState.players[targetPlayerId];
+        let randomAttackCoefficient = 0.8 + Math.random() * 0.4;
+        let attackDamage = attackingPlayer.attackDamage * randomAttackCoefficient
+        targetPlayer.health -= attackDamage;
+        attackingPlayer.gameConsoleLog(`You attacked ${targetPlayer.name} and caused ${attackDamage} points of damage.`);
+        targetPlayer.gameConsoleLog(`${attackingPlayer.name} attacked you and caused ${attackDamage} points of damage. New health = ${targetPlayer.health}`);
+      }
+    }    
+  });
+
 });
