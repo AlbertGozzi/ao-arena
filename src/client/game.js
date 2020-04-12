@@ -89,7 +89,27 @@ const drawPlayer = (player, playerSize, deltaDisplayX, deltaDisplayY) => {
 
 ////////////////// Server <> Client //////////////////
 // Send messages to server
-socket.emit('new player');
+// Emit new player after clicking start game
+let playerCreated = false;
+let startGameBtn = document.getElementById('start-game');
+let playerNameBtn = document.getElementById('player-name');
+console.log(startGameBtn);
+console.log(playerNameBtn);
+startGameBtn.addEventListener('click', (event) => {
+  if (!playerCreated) {
+    //Emit player 
+    socket.emit('new player', playerNameBtn.value);
+    
+    //Remove login area
+    let overlay = document.getElementById('overlay');
+    overlay.style.display = 'none';
+    let overlayChilds = overlay.childNodes;
+    overlayChilds.forEach((element) => {
+      element.style.display = 'none';
+    });
+  }
+});
+
 setInterval(function() {
   // Pass and reset attack
   socket.emit('attack', attack);

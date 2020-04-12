@@ -53,9 +53,9 @@ let maxY = MAP_SIZE_TILES - minY;
 
 // Class Definitions
 class Player {
-  constructor() {
+  constructor(playerName) {
     // Name
-    this.name = "Player";
+    this.name = playerName;
 
     // Position
     this.x = MAP_SIZE_TILES / 2;
@@ -92,44 +92,30 @@ class Player {
   }
 
   move(direction) {
-    switch (true) {
-      case (direction === 'left'):
-        // Update face
-        this.facing = 'left';
+    // Do nothing if no message
+    if (direction === '') { return; }
 
-        // Generate target spot
-        this.potentialX = this.x - 1;
-        // Update position to target if not blocked
-        if (this.x !== minX && !gameState.map.blockedPositions[this.potentialX][this.y]) {this.x = this.potentialX;}
+    // Update face direction
+    this.facing = direction;
 
-        // Update target position
-        this.targetPosition.x = this.x - 1;
-        this.targetPosition.y = this.y;
+    // Generate potential spot character will move to
+    this.potentialX = this.x + ((direction === 'left') ? -1 : 0) + ((direction === 'right') ? 1 : 0);
+    this.potentialY = this.y + ((direction === 'down') ? 1 : 0) + ((direction === 'up') ? -1 : 0);
 
-        break;
-      case (direction === 'right'):
-        this.facing = 'right';
-        this.potentialX = this.x + 1;
-        if (this.x !== maxX && !gameState.map.blockedPositions[this.potentialX][this.y]) {this.x = this.potentialX;}
-        // Update target position
-        this.targetPosition.x = this.x + 1;
-        this.targetPosition.y = this.y;
-        break;
-      case (direction === 'down'):
-        this.facing = 'down';
-        this.potentialY = this.y + 1;
-        if (this.y !== maxY && !gameState.map.blockedPositions[this.x][this.potentialY]) {this.y = this.potentialY;}
-        this.targetPosition.x = this.x;
-        this.targetPosition.y = this.y + 1;
-        break; 
-      case (direction === 'up'):
-        this.facing = 'up';
-        this.potentialY = this.y - 1;
-        if (this.y !== minY && !gameState.map.blockedPositions[this.x][this.potentialY]) {this.y = this.potentialY;}
-        this.targetPosition.x = this.x;
-        this.targetPosition.y = this.y - 1;
-        break;
+    // List conditions to not move
+    let outOfLimitsX = this.potentialX < minX || this.potentialX > maxX;
+    let outOfLimitsY = this.potentialY < minY || this.potentialY > maxY; 
+    let positionBlocked = gameState.map.blockedPositions[this.potentialX][this.potentialY];
+
+    // If none happen, move!
+    if (!outOfLimitsX && !outOfLimitsY && !positionBlocked) {
+      this.x = this.potentialX;
+      this.y = this.potentialY;
     }
+    
+    // Update target position regardless
+    this.targetPosition.x = this.x + (direction === 'left') ? -1 : 0 + (direction === 'right') ? 1 : 0;
+    this.targetPosition.y = this.y + (direction === 'down') ? 1 : 0 + (direction === 'up') ? -1 : 0;
   }
 
   attack() {
@@ -187,8 +173,8 @@ setInterval(function() {
   
 // Respond to messages
 io.on('connection', function(socket) {
-  socket.on('new player', function() {
-    gameState.players[socket.id] = new Player();
+  socket.on('new player', function(playerName) {
+    gameState.players[socket.id] = new Player(playerName);
     gameState.players[socket.id].positionRandomly();
     console.log(`Connected ${socket.id}`);
   });
