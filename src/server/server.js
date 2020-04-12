@@ -34,8 +34,8 @@ const loadServer = () => {
 };
 
 // Constants (should be same as game.js)
-const CANVAS_WIDTH_PCT_CLIENTS = 0.75;
-const CANVAS_HEIGHT_PCT_WIDTH = 0.55;
+const CANVAS_WIDTH_PCT_CLIENTS = 0.7;
+const CANVAS_HEIGHT_PCT_WIDTH = 0.53;
 const PLAYER_PERCENTAGE_CLIENT_SIZE = 0.02;
 const MAP_SIZE_TILES = 100;
 const GAME_CONSOLE_MAX_MESSAGES = 7;
