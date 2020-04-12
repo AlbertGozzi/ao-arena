@@ -124,7 +124,8 @@ class Player {
 
   attack() {
     let targetPlayerId = gameState.map.playerIds[this.targetPosition.x][this.targetPosition.y];
-    if (targetPlayerId !== null) {
+    // Only attack if you're attacking someone and you're alive
+    if (targetPlayerId !== null && this.health > 0) {
       let targetPlayer = gameState.players[targetPlayerId];
       let randomAttackCoefficient = 0.8 + Math.random() * 0.4;
       let attackDamage = Math.floor(this.attackDamage * randomAttackCoefficient);
