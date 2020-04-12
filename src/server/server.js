@@ -53,9 +53,12 @@ let maxY = MAP_SIZE_TILES - minY;
 
 // Class Definitions
 class Player {
-  constructor(playerName) {
+  constructor(playerName, socketId) {
     // Name
     this.name = playerName;
+
+    // Socket Id
+    this.socketId = socketId;
 
     // Position
     this.x = MAP_SIZE_TILES / 2;
@@ -74,6 +77,7 @@ class Player {
     this.gameConsoleLiArray = [];
 
     // Fighting
+    this.initialHealth = PLAYER_INITIAL_HEALTH;
     this.health = PLAYER_INITIAL_HEALTH;
     this.attackDamage = PLAYER_ATTACK_DAMAGE;
 
@@ -114,8 +118,8 @@ class Player {
     }
     
     // Update target position regardless
-    this.targetPosition.x = this.x + (direction === 'left') ? -1 : 0 + (direction === 'right') ? 1 : 0;
-    this.targetPosition.y = this.y + (direction === 'down') ? 1 : 0 + (direction === 'up') ? -1 : 0;
+    this.targetPosition.x = this.x + ((direction === 'left') ? -1 : 0) + ((direction === 'right') ? 1 : 0);
+    this.targetPosition.y = this.y + ((direction === 'down') ? 1 : 0) + ((direction === 'up') ? -1 : 0);
   }
 
   attack() {
@@ -132,7 +136,9 @@ class Player {
         this.gameConsoleLog(`You attacked ${targetPlayer.name} and caused ${attackDamage} points of damage. You killed him/her!`);
 
         // Respawn
+        gameState.map.reset(targetPlayer);
         targetPlayer.positionRandomly();
+        gameState.map.update(targetPlayer);
         targetPlayer.health = PLAYER_INITIAL_HEALTH;
         
         // Update stats
@@ -156,7 +162,15 @@ class State {
     this.players = {};
     this.map = {
       blockedPositions: new Array(MAP_SIZE_TILES).fill(0).map(() => new Array(MAP_SIZE_TILES).fill(false)),
-      playerIds: new Array(MAP_SIZE_TILES).fill(0).map(() => new Array(MAP_SIZE_TILES).fill(null))
+      playerIds: new Array(MAP_SIZE_TILES).fill(0).map(() => new Array(MAP_SIZE_TILES).fill(null)),
+      reset(player) {
+        this.playerIds[player.x][player.y] = null;
+        this.blockedPositions[player.x][player.y] = false;      
+      },
+      update(player) {
+        this.playerIds[player.x][player.y] = player.socketId;
+        this.blockedPositions[player.x][player.y] = true;     
+      }
     };
   }
 }
@@ -174,20 +188,21 @@ setInterval(function() {
 // Respond to messages
 io.on('connection', function(socket) {
   socket.on('new player', function(playerName) {
-    gameState.players[socket.id] = new Player(playerName);
-    gameState.players[socket.id].positionRandomly();
+    gameState.players[socket.id] = new Player(playerName, socket.id);
+    let player = gameState.players[socket.id];
+    gameState.map.reset(player);
+    player.positionRandomly();
+    gameState.map.update(player);
     console.log(`Connected ${socket.id}`);
   });
 
   socket.on('movement', function(movement) {
     let player = gameState.players[socket.id] || {};
     // Conditional to make sure you perform actions if there is a player
-    if (gameState.players[socket.id]) { 
-      gameState.map.playerIds[player.x][player.y] = null;
-      gameState.map.blockedPositions[player.x][player.y] = false;
+    if (gameState.players[socket.id]) {
+      gameState.map.reset(player);
       player.move(movement);
-      gameState.map.playerIds[player.x][player.y] = socket.id;
-      gameState.map.blockedPositions[player.x][player.y] = true;
+      gameState.map.update(player);
     }    
   });
 

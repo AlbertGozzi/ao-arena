@@ -39,7 +39,7 @@ document.addEventListener('keyup', (event) => {
   if (event.keyCode === 17) { attack = true; }
 });
 
-////////////////// Printing to in-game console //////////////////
+////////////////// DOM Manipulation - Console and right-side menu //////////////////
 // Print to game console
 let gameConsole = document.querySelector('#game-console');
 const drawConsoleLog = (player) => {
@@ -49,6 +49,35 @@ const drawConsoleLog = (player) => {
     newLi.innerHTML = message;
     gameConsole.append(newLi);
   });
+};
+
+// Draw name
+let playerNameDisplay = document.querySelector('#player-name-display');
+const drawName = (player) => {
+  playerNameDisplay.innerHTML = player.name;
+};
+
+// Draw health
+let playerHealthDisplay = document.querySelector('#health-display');
+const drawHealth = (player) => {
+  playerHealthDisplay.innerHTML = `${player.health} / ${player.initialHealth}`;
+};
+
+// Draw position in mini map
+let miniMap = document.querySelector('#mini-map-display');
+const drawPositionMiniMap = (player) => {
+  // Get positions
+  let miniMapRectangle = miniMap.getBoundingClientRect();
+  let positionInMiniMapX = miniMapRectangle.x + (player.x - 1) / MAP_SIZE_TILES * miniMapRectangle.height;
+  let positionInMiniMapY = miniMapRectangle.y + (player.y - 1) / MAP_SIZE_TILES * miniMapRectangle.width;
+
+  // Move rectangle
+  let rectangle = document.querySelector('#mini-map-player');
+  const rectSize = 2;
+  rectangle.style.top = Math.floor(positionInMiniMapY - rectSize/2)+'px';
+  rectangle.style.left = Math.floor(positionInMiniMapX - rectSize/2)+'px';
+  rectangle.style.height = rectSize+'px';
+  rectangle.style.width = rectSize+'px';
 };
 
 ////////////////// Asset Loading and Drawing //////////////////
@@ -84,7 +113,13 @@ const drawPlayer = (player, playerSize, deltaDisplayX, deltaDisplayY) => {
     default: imgIndex = 1;
   }
 
+  // Draw head
   context.drawImage(head, head.naturalWidth / 4 * (imgIndex - 1), 0, head.naturalWidth / 4, head.naturalHeight / 2.5, playerDisplayX, playerDisplayY, playerWidth, playerHeight);
+  // Draw name
+  context.fillStyle = 'white';
+  context.textAlign = 'center';
+  context.font = "13px Arial";
+  context.fillText(player.name, playerDisplayX + playerSize / 2, playerDisplayY + playerSize + 13 * 1.5);
 };
 
 ////////////////// Server <> Client //////////////////
@@ -93,8 +128,6 @@ const drawPlayer = (player, playerSize, deltaDisplayX, deltaDisplayY) => {
 let playerCreated = false;
 let startGameBtn = document.getElementById('start-game');
 let playerNameBtn = document.getElementById('player-name');
-console.log(startGameBtn);
-console.log(playerNameBtn);
 startGameBtn.addEventListener('click', (event) => {
   if (!playerCreated) {
     //Emit player 
@@ -103,11 +136,8 @@ startGameBtn.addEventListener('click', (event) => {
     //Remove login area
     let overlay = document.getElementById('overlay');
     overlay.style.display = 'none';
-    let overlayChilds = overlay.childNodes;
-    overlayChilds.forEach((element) => {
-      element.style.display = 'none';
-    });
   }
+  playerCreated = true;
 });
 
 setInterval(function() {
@@ -148,8 +178,13 @@ socket.on('state', function(gameState) {
   // Draw map
   drawMap(deltaDisplayX, deltaDisplayY);
   
-  // Draw log
-  if (currentPlayer) { drawConsoleLog(currentPlayer); }
+  // Draw log and stats
+  if (currentPlayer) { 
+    drawConsoleLog(currentPlayer); 
+    drawName(currentPlayer); 
+    drawHealth(currentPlayer);  
+    drawPositionMiniMap(currentPlayer);   
+  }
 
   // Draw players
   for (let id in gameState.players) {

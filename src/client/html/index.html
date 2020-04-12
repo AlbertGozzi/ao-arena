@@ -17,14 +17,18 @@
         <input id='start-game' type="button" value="Start Game!">
       </form>
     </div>
-    <section id='left side'>
+    <section id='left-side'>
       <ul id="game-console"> 
       </ul>
       <canvas id="canvas">
       </canvas>
     </section>
     <section id="right-side-panel">
-    </section>
+      <h1 id="player-name-display"></h1>
+      <p id="health-display">80/100</p>
+      <img id="mini-map-display" src="/public/assets/14.png" alt="">
+      <div id='mini-map-player'></div>
+=    </section>
     <!-- <embed src="/public/assets/music/1.mp3" loop="true" autostart="true" width="0" height="0"> -->
   </body>
   <script src="/socket.io/socket.io.js"></script>
