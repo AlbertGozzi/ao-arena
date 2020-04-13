@@ -11,7 +11,7 @@
   <body>
     <div id="overlay">
       <img src="/public/assets/ui/logo.png" alt="">
-      <form action="/action_page.php">
+      <form onsubmit="return createPlayer()">
         <label for="fname">Player Name:</label>
         <input id='player-name' type="text" id="fname" name="fname"><br><br>
         <input id='start-game' type="button" value="Start Game!">
