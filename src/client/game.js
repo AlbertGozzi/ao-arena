@@ -134,6 +134,9 @@ const createPlayer = () => {
   if (!playerCreated) {
     //Emit player 
     socket.emit('new player', playerNameInput.value);
+
+    //Stop intro music
+    document.getElementById('intro-music').pause();
   
     //Remove login area
     let overlay = document.getElementById('overlay');
