@@ -239,7 +239,7 @@ const drawOnlinePlayers = (number) => {
   context.textBaseline = 'top';
 
   context.textAlign = 'right';
-  let onlineX = canvas.width - 10git;
+  let onlineX = canvas.width - 10;
   let onlineY = 5;
 
   context.fillText(`Online players: ${number}`, onlineX, onlineY);
