@@ -164,10 +164,12 @@ class State {
     this.map = {
       blockedPositions: new Array(MAP_SIZE_TILES).fill(0).map(() => new Array(MAP_SIZE_TILES).fill(false)),
       playerIds: new Array(MAP_SIZE_TILES).fill(0).map(() => new Array(MAP_SIZE_TILES).fill(null)),
+      
       reset(player) {
         this.playerIds[player.x][player.y] = null;
         this.blockedPositions[player.x][player.y] = false;      
       },
+      
       update(player) {
         this.playerIds[player.x][player.y] = player.socketId;
         this.blockedPositions[player.x][player.y] = true;     
@@ -216,8 +218,11 @@ io.on('connection', function(socket) {
   });
 
   socket.on('disconnect', (reason) => {
+    let player = gameState.players[socket.id] || {};
     console.log(`Disconnected ${socket.id}`);
-    delete gameState.players[socket.id];
+    if (gameState.players[socket.id]) {
+      gameState.map.reset(player);
+      delete gameState.players[socket.id];
+    }
   });
-
 });

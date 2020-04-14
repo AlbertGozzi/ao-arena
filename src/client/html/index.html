@@ -20,8 +20,12 @@
     <section id='left-side'>
       <ul id="game-console"> 
       </ul>
-      <canvas id="canvas">
-      </canvas>
+      <div id='wrapper'>
+        <canvas id="canvas-background">
+        </canvas>
+        <canvas id="canvas">
+        </canvas>
+      </div>
     </section>
     <section id="right-side-panel">
       <h1 id="player-name-display"></h1>
@@ -29,9 +33,10 @@
       <img id="mini-map-display" src="/public/assets/14.png" alt="">
       <div id='mini-map-player'></div>
     </section>
-    <audio id="intro-music" src="/public/assets/music/AO-Soundtrack-Intro.mp3" loop="true" autoplay="true" width="0" height="0"></audio>
-    <audio id="game-music" src="/public/assets/music/AO-Soundtrack-Bosque.mp3" loop="true" width="0" height="0"></audio>  
+    <!-- <audio id="intro-music" src="/public/assets/music/AO-Soundtrack-Intro.mp3" loop="true" autoplay="true" width="0" height="0"></audio>
+    <audio id="game-music" src="/public/assets/music/AO-Soundtrack-Bosque.mp3" loop="true" width="0" height="0"></audio>   -->
   </body>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/src/client/init.js"></script>
   <script src="/src/client/game.js"></script>
 </html>
