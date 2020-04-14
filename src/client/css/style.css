@@ -41,27 +41,6 @@ form * {
     padding: 5px 10px;
 }
 
-/* ul {
-    color: white;
-    background-color: black;
-    margin: 0;
-    padding-left: 1vw;
-    margin: 15px 0px 0px 10px;
-
-    font-size: 14px;
-
-    width: 70vw;
-    height: 20vh;
-
-    list-style-type: none;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-
-}
-
-li {
-    padding: 2px 0px;
-} */
-
 #left-side {
     position: relative;
 }
@@ -91,46 +70,8 @@ canvas {
     background-color: black;
 }
 
-#right-side-panel {
-    flex: 3;
-    background-image: url(/public/assets/ui/main-simplified.jpg);
-    background-size: cover;
+#canvas-stats {
+    margin-top: 10px;
+    background-image: url(/public/assets/ui/main-simplified-mod.jpg);
+    background-size: contain;
 }
-
-#player-name-display {
-    position: relative;
-    top: 8.5%;
-    text-align: center;
-    padding-left: 3%;
-
-    color: #aa967f;
-}
-
-#health-display {
-    position: absolute;
-    top: 77.3%;
-    left: 78%;
-    text-align: center;
-    padding-left: 3%;
-
-    color: #aa967f;
-    font-weight: 600;
-}
-
-#mini-map-display {
-    position: absolute;
-    top: 73.2%;
-    left: 89.2%;
-    height: 14.2vh;
-    width: 14.2vh;
-}
-
-#mini-map-player {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 0;
-    width: 0;
-    background-color: red;
-}
-

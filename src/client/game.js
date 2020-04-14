@@ -18,6 +18,9 @@ let backgroundCanvas = document.getElementById('canvas-background');
 let backgroundContext = backgroundCanvas.getContext('2d');
 let consoleCanvas = document.getElementById('canvas-console');
 let consoleContext = consoleCanvas.getContext('2d');
+let statsCanvas = document.getElementById('canvas-stats');
+let statsContext = statsCanvas.getContext('2d');
+
 
 
 // Reset size of canvas
@@ -26,6 +29,8 @@ const updateCanvas = () => {
   canvas.height = canvas.width * CANVAS_HEIGHT_PCT_WIDTH;
   consoleCanvas.width = canvas.width;
   consoleCanvas.height = canvas.width * (CANVAS_WIDTH_PCT_CLIENTS - CANVAS_HEIGHT_PCT_WIDTH);
+  statsCanvas.width = document.documentElement.clientWidth * (1 - CANVAS_WIDTH_PCT_CLIENTS - 0.05);
+  statsCanvas.height = canvas.width * CANVAS_WIDTH_PCT_CLIENTS + 6; // TODO fix
 };
 // Update for the first time
 updateCanvas();
@@ -180,27 +185,43 @@ const drawConsoleLog = (player) => {
     consoleContext.fillText(message, 5, 5 + (consoleCanvas.height - 5) / GAME_CONSOLE_MAX_MESSAGES * i);
   });
 };
-// let gameConsole = document.querySelector('#game-console');
-// const drawConsoleLog = (player) => {
-//   gameConsole.innerHTML = "";
-//   player.gameConsoleLiArray.forEach((message) => {
-//     let newLi = document.createElement('li');
-//     newLi.innerHTML = message;
-//     gameConsole.append(newLi);
-//   });
-// };
 
 // Draw name
-let playerNameDisplay = document.querySelector('#player-name-display');
 const drawName = (player) => {
-  playerNameDisplay.innerHTML = player.name;
+  statsContext.fillStyle = '#aa967f';
+  statsContext.textAlign = 'center';
+  statsContext.textBaseline = 'middle';
+  statsContext.font = "600 16px Arial";
+  statsContext.fillText(player.name, statsCanvas.width / 2, statsCanvas.height * 0.107);
 };
 
 // Draw health
-let playerHealthDisplay = document.querySelector('#health-display');
 const drawHealth = (player) => {
-  playerHealthDisplay.innerHTML = `${player.health} / ${player.initialHealth}`;
+  statsContext.fillStyle = '#aa967f';
+  statsContext.textAlign = 'center';
+  statsContext.textBaseline = 'middle';
+  statsContext.font = "600 12px Arial";
+  statsContext.fillText(`${player.health} / ${player.initialHealth}`, statsCanvas.width * 0.37, statsCanvas.height * 0.820);
 };
+
+// Draw minimap
+const drawMiniMap = (player) => {
+  const img = new Image ();
+  img.src = '/public/assets/14.png';
+
+  // Draw map
+  let imgX = statsCanvas.width * 0.605;
+  let imgY = statsCanvas.height * 0.76;
+  let imgSize = statsCanvas.height * 0.123;
+  statsContext.drawImage(img, imgX, imgY, imgSize, imgSize);
+
+  // Draw character
+  statsContext.fillStyle = 'red';
+  let positionInMiniMapX = imgX + (player.x - 1) / MAP_SIZE_TILES * imgSize;
+  let positionInMiniMapY = imgY + (player.y - 1) / MAP_SIZE_TILES * imgSize;
+  statsContext.fillRect(positionInMiniMapX, positionInMiniMapY, 2, 2);
+};
+
 
 // Draw position in mini map
 let miniMap = document.querySelector('#mini-map-display');
@@ -354,6 +375,7 @@ socket.on('state', function(gameState) {
       lastUpdatedY = currentPlayer.y;
     }
   }
+  
   // drawMap(deltaDisplayX, deltaDisplayY);
   
   // Draw log and stats
@@ -361,7 +383,7 @@ socket.on('state', function(gameState) {
     drawConsoleLog(currentPlayer); 
     drawName(currentPlayer); 
     drawHealth(currentPlayer);  
-    drawPositionMiniMap(currentPlayer);   
+    drawMiniMap(currentPlayer);
   }
 
   // Draw players
