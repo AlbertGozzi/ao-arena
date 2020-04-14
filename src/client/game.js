@@ -176,7 +176,7 @@ document.addEventListener('keyup', (event) => {
   if (event.keyCode === 17) { attack = true; }
 });
 
-////////////////// DOM Manipulation - Console and right-side menu //////////////////
+////////////////// Drawing //////////////////
 // Print to game console
 const drawConsoleLog = (player) => {
   consoleContext.fillStyle = 'white';
@@ -199,11 +199,19 @@ const drawName = (player) => {
 
 // Draw health
 const drawHealth = (player) => {
+  statsContext.fillStyle = 'darkred';
+  let barX = statsCanvas.width * 0.235;
+  let barY = statsCanvas.height * 0.809;
+  let barFullWidth = statsCanvas.width * 0.295; 
+  let barWidth = barFullWidth * player.health / player.initialHealth;
+  let barHeight = statsCanvas.height * 0.019;
+  statsContext.fillRect(barX, barY, barWidth, barHeight);
+  
   statsContext.fillStyle = '#aa967f';
   statsContext.textAlign = 'center';
   statsContext.textBaseline = 'middle';
-  statsContext.font = "12px Arial";
-  statsContext.fillText(`${player.health} / ${player.initialHealth}`, statsCanvas.width * 0.37, statsCanvas.height * 0.820);
+  statsContext.font = "500 12px Arial";
+  statsContext.fillText(`${player.health} / ${player.initialHealth}`, barX + barFullWidth / 2, barY + barHeight / 2);
 };
 
 // Draw minimap
@@ -224,34 +232,20 @@ const drawMiniMap = (player) => {
   statsContext.fillRect(positionInMiniMapX, positionInMiniMapY, 2, 2);
 };
 
+// Draw number of players online
+const drawOnlinePlayers = (number) => {
+  context.fillStyle = 'white';
+  context.font = "14px Arial";
+  context.textBaseline = 'top';
 
-// Draw position in mini map
-let miniMap = document.querySelector('#mini-map-display');
-const drawPositionMiniMap = (player) => {
-  // Get positions
-  let miniMapRectangle = miniMap.getBoundingClientRect();
-  let positionInMiniMapX = miniMapRectangle.x + (player.x - 1) / MAP_SIZE_TILES * miniMapRectangle.height;
-  let positionInMiniMapY = miniMapRectangle.y + (player.y - 1) / MAP_SIZE_TILES * miniMapRectangle.width;
+  context.textAlign = 'right';
+  let onlineX = canvas.width - 10git;
+  let onlineY = 5;
 
-  // Move rectangle
-  let rectangle = document.querySelector('#mini-map-player');
-  const rectSize = 2;
-  rectangle.style.top = Math.floor(positionInMiniMapY - rectSize/2)+'px';
-  rectangle.style.left = Math.floor(positionInMiniMapX - rectSize/2)+'px';
-  rectangle.style.height = rectSize+'px';
-  rectangle.style.width = rectSize+'px';
+  context.fillText(`Online players: ${number}`, onlineX, onlineY);
 };
 
-////////////////// Asset Loading and Drawing //////////////////
-// Load maps and define draw function
-let map = new Image ();
-map.src = "/public/assets/14.png";
-const drawMap = (deltaX, deltaY) => {
-  let mapWidth = document.documentElement.clientWidth * PLAYER_PERCENTAGE_CLIENT_SIZE * MAP_SIZE_TILES;
-  let mapHeight = mapWidth;
-  context.drawImage(map, deltaX, deltaY, mapWidth, mapHeight);
-};
-
+////////////////// Asset Loading and Drawing //////////////////   
 // Load player images and define draw function
 let head = new Image ();
 head.src = "/public/assets/2064.png";
@@ -353,8 +347,8 @@ let lastUpdatedY = 0;
 socket.on('state', function(gameState) {
   // Clear canvases
   context.clearRect(0, 0, canvas.width, canvas.height);
-  statsContext.clearRect(0, 0, canvas.width, canvas.height);
-  consoleContext.clearRect(0, 0, canvas.width, canvas.height);
+  statsContext.clearRect(0, 0, statsCanvas.width, statsCanvas.height);
+  consoleContext.clearRect(0, 0, consoleCanvas.width, consoleCanvas.height);
 
   // Draw canvas
   // Get current player
@@ -372,7 +366,7 @@ socket.on('state', function(gameState) {
   let deltaDisplayX = canvasCenterX - selfDisplayX;
   let deltaDisplayY = canvasCenterY - selfDisplayY;
 
-  // Draw map
+  // Draw background map 
   if (currentPlayer) {
     if ((currentPlayer.x !== lastUpdatedX) || (currentPlayer.y !== lastUpdatedY)) {
       backgroundContext.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
@@ -386,16 +380,17 @@ socket.on('state', function(gameState) {
       lastUpdatedY = currentPlayer.y;
     }
   }
-  
-  // drawMap(deltaDisplayX, deltaDisplayY);
-  
-  // Draw log and stats
+
+  // Draw log and player-specific tasks
   if (currentPlayer) { 
     drawConsoleLog(currentPlayer); 
     drawName(currentPlayer); 
     drawHealth(currentPlayer);  
     drawMiniMap(currentPlayer);
   }
+
+  // Draw general stats
+  drawOnlinePlayers(Object.keys(gameState.players).length);
 
   // Draw players
   for (let id in gameState.players) {
