@@ -173,7 +173,7 @@ document.addEventListener('keydown', (event) => {
 // Attack on ctrl
 let attack = false;
 document.addEventListener('keyup', (event) => {
-  if (event.keyCode === 17) { attack = true; }
+  if (event.keyCode === 16) { attack = true; }
 });
 
 ////////////////// Drawing //////////////////
