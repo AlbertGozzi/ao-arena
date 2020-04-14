@@ -30,11 +30,11 @@ class Inits {
 
         this.mapasCargados++;
 
-        if (this.react) {
-            this.react.setState({
-                mapasCargados: this.mapasCargados
-            });
-        }
+        // if (this.react) {
+        //     this.react.setState({
+        //         mapasCargados: this.mapasCargados
+        //     });
+        // }
     };
 
     createMapData = idMap => {
@@ -83,3 +83,5 @@ class Inits {
         this.graphics = result;
     };
 }
+
+const inits = new Inits();

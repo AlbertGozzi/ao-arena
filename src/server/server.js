@@ -3,6 +3,7 @@ let express = require('express');
 let http = require('http');
 let path = require('path');
 let socketIO = require('socket.io');
+let fs = require('fs');
 
 // Renaming
 let app = express();
@@ -39,6 +40,7 @@ const CANVAS_HEIGHT_PCT_WIDTH = 0.53;
 const PLAYER_PERCENTAGE_CLIENT_SIZE = 0.02;
 const MAP_SIZE_TILES = 100;
 const GAME_CONSOLE_MAX_MESSAGES = 7;
+const MAP_NUMBER = 14;
 
 // Constants (just for server)
 const PLAYER_INITIAL_HEALTH = 100;
@@ -87,10 +89,20 @@ class Player {
   }
 
   positionRandomly() {
-    let position = {
-      x: MAP_SIZE_TILES / 2 - 10 + Math.ceil(Math.random() * 20),
-      y: MAP_SIZE_TILES / 2 - 10 + Math.ceil(Math.random() * 20)
+    const randomPosition = () => {
+      let randomPosition = {
+        x: MAP_SIZE_TILES / 2 - 10 + Math.ceil(Math.random() * 20),
+        y: MAP_SIZE_TILES / 2 - 10 + Math.ceil(Math.random() * 20)
+      };
+      if (!gameState.map.blockedPositions[randomPosition.x][randomPosition.y]) {
+        return randomPosition;
+      } else {
+        return randomPosition();
+      }
     };
+
+    let position = randomPosition();
+
     this.x = position.x;
     this.y = position.y;
   }
@@ -162,8 +174,9 @@ class State {
   constructor() {
     this.players = {};
     this.map = {
-      blockedPositions: new Array(MAP_SIZE_TILES).fill(0).map(() => new Array(MAP_SIZE_TILES).fill(false)),
-      playerIds: new Array(MAP_SIZE_TILES).fill(0).map(() => new Array(MAP_SIZE_TILES).fill(null)),
+      mapNumber : MAP_NUMBER,
+      blockedPositions: new Array(MAP_SIZE_TILES+1).fill(0).map(() => new Array(MAP_SIZE_TILES+1).fill(false)),
+      playerIds: new Array(MAP_SIZE_TILES+1).fill(0).map(() => new Array(MAP_SIZE_TILES+1).fill(null)),
       
       reset(player) {
         this.playerIds[player.x][player.y] = null;
@@ -173,6 +186,16 @@ class State {
       update(player) {
         this.playerIds[player.x][player.y] = player.socketId;
         this.blockedPositions[player.x][player.y] = true;     
+      },
+
+      loadMap() {
+        const rawData = fs.readFileSync('public/static/mapas/mapa_14.map');
+        let map = JSON.parse(rawData).tiles;
+        for (let x = 1; x <= MAP_SIZE_TILES; x++) {
+          for (let y = 1; y <= MAP_SIZE_TILES; y++) {
+            if (map[x][y].blocked) { this.blockedPositions[x][y] = true;}
+          }
+        }
       }
     };
   }
@@ -181,6 +204,7 @@ class State {
 // Execution code
 loadServer();
 let gameState = new State();
+gameState.map.loadMap();
 
 ////////////////// Server <> Client //////////////////
 // Send message to client

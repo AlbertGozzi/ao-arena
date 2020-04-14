@@ -1,5 +1,3 @@
-Have images be blockable
-
 
 From niko tzikas to Me:  (Privately) 11:03 AM
 https://phaser.io/examples/v2/tilemaps
