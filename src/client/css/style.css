@@ -41,7 +41,7 @@ form * {
     padding: 5px 10px;
 }
 
-ul {
+/* ul {
     color: white;
     background-color: black;
     margin: 0;
@@ -60,18 +60,31 @@ ul {
 
 li {
     padding: 2px 0px;
-}
+} */
 
-#wrapper {
+#left-side {
     position: relative;
 }
 
 canvas {
+    margin-left: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#canvas-console {
+    margin-top: 10px;
+    background-color: black;
+}
+
+#wrapper {
+    position: relative;
+    /* width: 70vw; */
+}
+
+#wrapper canvas {
     position: absolute;
     top: 0;
     left: 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    margin-left: 10px;
 }
 
 #canvas-background {

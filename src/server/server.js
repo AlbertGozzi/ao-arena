@@ -89,20 +89,7 @@ class Player {
   }
 
   positionRandomly() {
-    const randomPosition = () => {
-      let randomPosition = {
-        x: MAP_SIZE_TILES / 2 - 10 + Math.ceil(Math.random() * 20),
-        y: MAP_SIZE_TILES / 2 - 10 + Math.ceil(Math.random() * 20)
-      };
-      if (!gameState.map.blockedPositions[randomPosition.x][randomPosition.y]) {
-        return randomPosition;
-      } else {
-        return randomPosition();
-      }
-    };
-
     let position = randomPosition();
-
     this.x = position.x;
     this.y = position.y;
   }
@@ -200,6 +187,18 @@ class State {
     };
   }
 }
+
+const randomPosition = () => {
+  let randomPos = {
+    x: MAP_SIZE_TILES / 2 - 5 + Math.ceil(Math.random() * 10),
+    y: MAP_SIZE_TILES / 2 - 5 + Math.ceil(Math.random() * 10)
+  };
+  if (!gameState.map.blockedPositions[randomPos.x][randomPos.y]) {
+    return randomPos;
+  } else {
+    return randomPosition();
+  }
+};
 
 // Execution code
 loadServer();

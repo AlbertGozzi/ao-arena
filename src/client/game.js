@@ -6,7 +6,7 @@ const CANVAS_WIDTH_PCT_CLIENTS = 0.7;
 const CANVAS_HEIGHT_PCT_WIDTH = 0.53;
 const PLAYER_PERCENTAGE_CLIENT_SIZE = 0.02;
 const MAP_SIZE_TILES = 100;
-const GAME_CONSOLE_MAX_MESSAGES = 7;
+const GAME_CONSOLE_MAX_MESSAGES = 8;
 const MAP_NUMBER = 14;
 // let gameConsoleNumMessages = Math.floor(gameConsole.clientHeight / 18); // TODO replace for font size
 
@@ -16,14 +16,21 @@ let canvas = document.getElementById('canvas');
 let context = canvas.getContext('2d');
 let backgroundCanvas = document.getElementById('canvas-background');
 let backgroundContext = backgroundCanvas.getContext('2d');
+let consoleCanvas = document.getElementById('canvas-console');
+let consoleContext = consoleCanvas.getContext('2d');
+
 
 // Reset size of canvas
 const updateCanvas = () => {
   canvas.width = document.documentElement.clientWidth * CANVAS_WIDTH_PCT_CLIENTS;
   canvas.height = canvas.width * CANVAS_HEIGHT_PCT_WIDTH;
+  consoleCanvas.width = canvas.width;
+  consoleCanvas.height = canvas.width * (CANVAS_WIDTH_PCT_CLIENTS - CANVAS_HEIGHT_PCT_WIDTH);
 };
-
+// Update for the first time
 updateCanvas();
+backgroundCanvas.width = canvas.width;
+backgroundCanvas.height = canvas.height;
 
 const updateItems = (player, playerSize, deltaDisplayX, deltaDisplayY) => {  
   let minY = Math.max(player.y - Math.floor(canvas.height / playerSize), 1);
@@ -164,15 +171,24 @@ document.addEventListener('keyup', (event) => {
 
 ////////////////// DOM Manipulation - Console and right-side menu //////////////////
 // Print to game console
-let gameConsole = document.querySelector('#game-console');
 const drawConsoleLog = (player) => {
-  gameConsole.innerHTML = "";
-  player.gameConsoleLiArray.forEach((message) => {
-    let newLi = document.createElement('li');
-    newLi.innerHTML = message;
-    gameConsole.append(newLi);
+  consoleContext.fillStyle = 'white';
+  consoleContext.textAlign = 'left';
+  consoleContext.textBaseline = 'top';
+  consoleContext.font = "13px Arial";
+  player.gameConsoleLiArray.forEach((message, i) => {
+    consoleContext.fillText(message, 5, 5 + (consoleCanvas.height - 5) / GAME_CONSOLE_MAX_MESSAGES * i);
   });
 };
+// let gameConsole = document.querySelector('#game-console');
+// const drawConsoleLog = (player) => {
+//   gameConsole.innerHTML = "";
+//   player.gameConsoleLiArray.forEach((message) => {
+//     let newLi = document.createElement('li');
+//     newLi.innerHTML = message;
+//     gameConsole.append(newLi);
+//   });
+// };
 
 // Draw name
 let playerNameDisplay = document.querySelector('#player-name-display');
@@ -329,8 +345,8 @@ socket.on('state', function(gameState) {
       backgroundCanvas.width = document.documentElement.clientWidth * CANVAS_WIDTH_PCT_CLIENTS;
       backgroundCanvas.height = canvas.width * CANVAS_HEIGHT_PCT_WIDTH;   
       playerSize = document.documentElement.clientWidth * PLAYER_PERCENTAGE_CLIENT_SIZE;
-      console.log(`Rendering background`);
-      console.log(playerSize);
+      // console.log(`Rendering background`);
+      // console.log(playerSize);
       // console.log(`DeltaX ${deltaDisplayX}, DeltaY ${deltaDisplayY}`)
       renderBackground(currentPlayer, playerSize, deltaDisplayX, deltaDisplayY);
       // drawBlockedPositions(gameState, playerSize, deltaDisplayX, deltaDisplayY);
