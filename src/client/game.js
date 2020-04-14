@@ -27,15 +27,17 @@ let statsContext = statsCanvas.getContext('2d');
 const updateCanvas = () => {
   canvas.width = document.documentElement.clientWidth * CANVAS_WIDTH_PCT_CLIENTS;
   canvas.height = canvas.width * CANVAS_HEIGHT_PCT_WIDTH;
+  backgroundCanvas.width = canvas.width;
+  backgroundCanvas.height = canvas.height;
   consoleCanvas.width = canvas.width;
   consoleCanvas.height = canvas.width * (CANVAS_WIDTH_PCT_CLIENTS - CANVAS_HEIGHT_PCT_WIDTH);
   statsCanvas.width = document.documentElement.clientWidth * (1 - CANVAS_WIDTH_PCT_CLIENTS - 0.05);
   statsCanvas.height = canvas.width * CANVAS_WIDTH_PCT_CLIENTS + 6; // TODO fix
 };
+
 // Update for the first time
 updateCanvas();
-backgroundCanvas.width = canvas.width;
-backgroundCanvas.height = canvas.height;
+
 
 const updateItems = (player, playerSize, deltaDisplayX, deltaDisplayY) => {  
   let minY = Math.max(player.y - Math.floor(canvas.height / playerSize), 1);
@@ -200,7 +202,7 @@ const drawHealth = (player) => {
   statsContext.fillStyle = '#aa967f';
   statsContext.textAlign = 'center';
   statsContext.textBaseline = 'middle';
-  statsContext.font = "600 12px Arial";
+  statsContext.font = "12px Arial";
   statsContext.fillText(`${player.health} / ${player.initialHealth}`, statsCanvas.width * 0.37, statsCanvas.height * 0.820);
 };
 
@@ -335,14 +337,24 @@ setInterval(function() {
   movement = '';
 }, 180 );
 
+// Resize canvas
+window.addEventListener('resize', (e) => {
+  console.log("resized");
+  updateCanvas();
+  lastUpdatedX = 0;
+  lastUpdatedY = 0;
+});
+
+// Initialize variables for background update
 let lastUpdatedX = 0;
 let lastUpdatedY = 0;
 
 // Receive state from server and update
 socket.on('state', function(gameState) {
-  // Reset canvas
+  // Clear canvases
   context.clearRect(0, 0, canvas.width, canvas.height);
-  updateCanvas();
+  statsContext.clearRect(0, 0, canvas.width, canvas.height);
+  consoleContext.clearRect(0, 0, canvas.width, canvas.height);
 
   // Draw canvas
   // Get current player
@@ -363,8 +375,7 @@ socket.on('state', function(gameState) {
   // Draw map
   if (currentPlayer) {
     if ((currentPlayer.x !== lastUpdatedX) || (currentPlayer.y !== lastUpdatedY)) {
-      backgroundCanvas.width = document.documentElement.clientWidth * CANVAS_WIDTH_PCT_CLIENTS;
-      backgroundCanvas.height = canvas.width * CANVAS_HEIGHT_PCT_WIDTH;   
+      backgroundContext.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
       playerSize = document.documentElement.clientWidth * PLAYER_PERCENTAGE_CLIENT_SIZE;
       // console.log(`Rendering background`);
       // console.log(playerSize);
