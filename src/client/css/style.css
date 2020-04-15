@@ -82,6 +82,7 @@ canvas {
     padding-left: 5px;
 
     visibility: hidden;
+    display: none;
 }
 
 #wrapper canvas {

@@ -21,7 +21,8 @@ let consoleContext = consoleCanvas.getContext('2d');
 let statsCanvas = document.getElementById('canvas-stats');
 let statsContext = statsCanvas.getContext('2d');
 
-
+// Boolean to see if game has started
+let playerCreated = false;
 
 // Reset size of canvas
 const updateCanvas = () => {
@@ -37,7 +38,6 @@ const updateCanvas = () => {
 
 // Update for the first time
 updateCanvas();
-
 
 const updateItems = (player, playerSize, deltaDisplayX, deltaDisplayY) => {  
   let minY = Math.max(player.y - Math.floor(canvas.height / playerSize), 1);
@@ -184,22 +184,30 @@ let messageTimeout = 0;
 
 // Focus if enter
 document.addEventListener('keydown', (event) => {
-  if (event.keyCode === 13 ) {
+  if (event.keyCode === 13  && playerCreated) {
+    // console.log(`enter post creating`)
     if (chatMessageTextbox.style.visibility === 'visible') {
+      // console.log(`Submit 1st`)
       // Print
       chatMessageInput = chatMessageTextbox.value;
       chatMessageTextbox.value = '';
+      // console.log(`Submit 2nd`)
+
 
       // Remove prior timeouts and set timeout for text to disappear
       clearTimeout(messageTimeout);
       messageTimeout = setTimeout( function() {
         chatMessageInput = '';
-      } , 4000)
+      } , 4000);
 
       // Hide
       chatMessageTextbox.style.visibility = 'hidden';
     } else {
+      // console.log(`1st`)
+      chatMessageTextbox.style.display = 'block';
+      // console.log(`2nd`)
       chatMessageTextbox.style.visibility = 'visible';
+      // console.log(`3rd`)
       chatMessageTextbox.focus(); 
     }
   }
@@ -207,8 +215,9 @@ document.addEventListener('keydown', (event) => {
 
 // Empty function for the form
 const doNothing = () => {
+  event.stopPropagation();
   event.preventDefault();
-  return;
+  return true;
 };
 
 ////////////////// Drawing //////////////////
@@ -362,12 +371,11 @@ const drawPlayer = (player, playerSize, deltaDisplayX, deltaDisplayY) => {
 ////////////////// Server <> Client //////////////////
 // Send messages to server
 // Emit new player after clicking start game
-let playerCreated = false;
 let startGameBtn = document.getElementById('start-game');
 let playerNameInput = document.getElementById('player-name');
 
 const createPlayer = () => {
-  console.log('Creating player')
+  console.log('Creating player...');
   event.preventDefault();
   if (!playerCreated) {
     //Emit player 
