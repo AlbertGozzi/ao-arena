@@ -143,20 +143,20 @@ const drawGraphic = (graphic, x, y, playerSize, isBackground) => {
     }
 };
 
-console.log(`Loading maps`);
-console.time();
+console.log(`Loading maps...`);
+// console.time();
 inits.loadMaps();
-console.timeEnd();
+// console.timeEnd();
 
-console.log(`Loading objs`);
-console.time();
+console.log(`Loading objs...`);
+// console.time();
 inits.loadObjs();
-console.timeEnd();
+// console.timeEnd();
 
-console.log(`Loading graphics`);
-console.time();
+console.log(`Loading graphics...`);
+// console.time();
 inits.loadGraphics();
-console.timeEnd();
+// console.timeEnd();
 
 ////////////////// Listen for inputs //////////////////
 // Update movement on arrow keys
@@ -173,8 +173,43 @@ document.addEventListener('keydown', (event) => {
 // Attack on ctrl
 let attack = false;
 document.addEventListener('keyup', (event) => {
-  if (event.keyCode === 16) { attack = true; }
+  if (event.keyCode === 16 || event.keyCode === 17) { attack = true; }
 });
+
+// Send message
+// Define variables
+let chatMessageInput = "";
+let chatMessageTextbox = document.getElementById('game-chat');
+let messageTimeout = 0;
+
+// Focus if enter
+document.addEventListener('keydown', (event) => {
+  if (event.keyCode === 13 ) {
+    if (chatMessageTextbox.style.visibility === 'visible') {
+      // Print
+      chatMessageInput = chatMessageTextbox.value;
+      chatMessageTextbox.value = '';
+
+      // Remove prior timeouts and set timeout for text to disappear
+      clearTimeout(messageTimeout);
+      messageTimeout = setTimeout( function() {
+        chatMessageInput = '';
+      } , 4000)
+
+      // Hide
+      chatMessageTextbox.style.visibility = 'hidden';
+    } else {
+      chatMessageTextbox.style.visibility = 'visible';
+      chatMessageTextbox.focus(); 
+    }
+  }
+});
+
+// Empty function for the form
+const doNothing = () => {
+  event.preventDefault();
+  return;
+};
 
 ////////////////// Drawing //////////////////
 // Print to game console
@@ -183,7 +218,7 @@ const drawConsoleLog = (player) => {
   consoleContext.textAlign = 'left';
   consoleContext.textBaseline = 'top';
   consoleContext.font = "13px Arial";
-  player.gameConsoleLiArray.forEach((message, i) => {
+  player.gameConsoleArray.forEach((message, i) => {
     consoleContext.fillText(message, 5, 5 + (consoleCanvas.height - 5) / GAME_CONSOLE_MAX_MESSAGES * i);
   });
 };
@@ -235,7 +270,7 @@ const drawMiniMap = (player) => {
 // Draw number of players online
 const drawOnlinePlayers = (number) => {
   context.fillStyle = 'white';
-  context.font = "14px Arial";
+  context.font = "13px Arial";
   context.textBaseline = 'top';
 
   context.textAlign = 'right';
@@ -246,6 +281,34 @@ const drawOnlinePlayers = (number) => {
 };
 
 ////////////////// Asset Loading and Drawing //////////////////   
+// Auxiliary function to wrap text
+const wrapText = (context, text, x, y, maxWidth, lineHeight) => {
+  let linesToPrint = [];
+  let words = text.split(' ');
+  let line = '';
+
+  for(let n = 0; n < words.length; n++) {
+    let testLine = line + words[n] + ' ';
+    let metrics = context.measureText(testLine);
+    let testWidth = metrics.width;
+    if (testWidth > maxWidth && n > 0) {
+      linesToPrint.push(line);
+      // context.fillText(line, x, y);
+      line = words[n] + ' ';
+      // y -= lineHeight;
+    }
+    else {
+      line = testLine;
+    }
+  }
+  linesToPrint.push(line);
+
+  linesToPrint.forEach((line, i) => {
+    let yToPrint = y - (linesToPrint.length - i - 1) * lineHeight; 
+    context.fillText(line, x, yToPrint);
+  });
+};
+
 // Load player images and define draw function
 let head = new Image ();
 head.src = "/public/assets/2064.png";
@@ -272,10 +335,17 @@ const drawPlayer = (player, playerSize, deltaDisplayX, deltaDisplayY) => {
   // Draw head
   context.drawImage(head, head.naturalWidth / 4 * (imgIndex - 1), 0, head.naturalWidth / 4, head.naturalHeight / 2.5, playerDisplayX, playerDisplayY, playerWidth, playerHeight);
   // Draw name
+  context.fillStyle = 'lightgrey';
+  context.textAlign = 'center';
+  context.textBaseline = 'top';
+  context.font = "600 13px Arial";
+  context.fillText(`< ${player.name} >`, playerDisplayX + playerSize / 2, playerDisplayY + playerSize * 1.3);
+  // Draw message
   context.fillStyle = 'white';
   context.textAlign = 'center';
-  context.font = "13px Arial";
-  context.fillText(player.name, playerDisplayX + playerSize / 2, playerDisplayY + playerSize + 13 * 1.5);
+  context.textBaseline = 'bottom';
+  context.font = "600 13px Arial";
+  wrapText(context, player.chatMessage, playerDisplayX + playerSize / 2, playerDisplayY - playerSize * 0.3, 10 * playerSize, 15 );
 };
 
 // const drawBlockedPositions = (gameState, playerSize, deltaDisplayX, deltaDisplayY) => {
@@ -297,6 +367,7 @@ let startGameBtn = document.getElementById('start-game');
 let playerNameInput = document.getElementById('player-name');
 
 const createPlayer = () => {
+  console.log('Creating player')
   event.preventDefault();
   if (!playerCreated) {
     //Emit player 
@@ -331,9 +402,15 @@ setInterval(function() {
   movement = '';
 }, 180 );
 
+// Chat 
+setInterval(function() {
+  // Pass and reset movement
+  socket.emit('new chat message', chatMessageInput);
+  // movement = '';
+}, 180 );
+
 // Resize canvas
 window.addEventListener('resize', (e) => {
-  console.log("resized");
   updateCanvas();
   lastUpdatedX = 0;
   lastUpdatedY = 0;

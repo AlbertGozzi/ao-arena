@@ -11,7 +11,7 @@
   <body>
     <div id="overlay">
       <img src="/public/assets/ui/logo.png" alt="">
-      <form autocomplete="off" onsubmit="return createPlayer()">
+      <form autocomplete="off" onsubmit='return createPlayer()'>
         <label for="fname">Player Name:</label>
         <input id='player-name' type="text" id="fname" name="fname"><br><br>
         <input id='start-game' type="button" value="Start Game!">
@@ -20,6 +20,9 @@
     <section id='left-side'>
       <canvas id='canvas-console'></canvas>
       <div id='wrapper'>
+        <form id="game-form" onsubmit='return doNothing()'>
+          <input type="text" id="game-chat" autocomplete="off">
+        </form>
         <canvas id="canvas-background"></canvas>
         <canvas id="canvas"></canvas>
       </div>

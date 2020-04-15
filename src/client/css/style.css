@@ -29,6 +29,9 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+
+    z-index: 2;
+
 }
 
 form {
@@ -58,6 +61,27 @@ canvas {
 #wrapper {
     position: relative;
     /* width: 70vw; */
+}
+
+#game-form {
+    margin-left: 10px;
+    position: absolute;
+    height: 20px;
+    width: 97.6%;
+    z-index: 1;
+}
+
+#game-chat {
+    background: rgba(255, 255, 255, 0.5);
+    border: 0;
+    color: black;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+
+    width: 100%;
+    padding-left: 5px;
+
+    visibility: hidden;
 }
 
 #wrapper canvas {

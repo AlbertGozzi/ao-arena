@@ -75,7 +75,10 @@ class Player {
     };
 
     // In-game console messages
-    this.gameConsoleLiArray = [];
+    this.gameConsoleArray = [];
+
+    // In-game chat
+    this.chatMessage = '';
 
     // Fighting
     this.initialHealth = PLAYER_INITIAL_HEALTH;
@@ -145,14 +148,14 @@ class Player {
         this.kills++;
       } else {
         this.gameConsoleLog(`You attacked ${targetPlayer.name} and caused ${attackDamage} points of damage.`);
-        targetPlayer.gameConsoleLog(`${this.name} attacked you and caused ${attackDamage} points of damage. New health = ${targetPlayer.health}`);  
+        targetPlayer.gameConsoleLog(`${this.name} attacked you and caused ${attackDamage} points of damage. Your health is now ${targetPlayer.health}`);  
       }
     }
   }
 
   gameConsoleLog(message) {
-    this.gameConsoleLiArray.push(message);
-    if (this.gameConsoleLiArray.length > GAME_CONSOLE_MAX_MESSAGES) { this.gameConsoleLiArray.shift(); }
+    this.gameConsoleArray.push(message);
+    if (this.gameConsoleArray.length > GAME_CONSOLE_MAX_MESSAGES) { this.gameConsoleArray.shift(); }
   }
 }
 
@@ -219,6 +222,14 @@ io.on('connection', function(socket) {
     player.positionRandomly();
     gameState.map.update(player);
     console.log(`Connected ${socket.id}`);
+  });
+
+  socket.on('new chat message', function(chatMessageInput) {
+    let player = gameState.players[socket.id] || {};
+    // Conditional to make sure you perform actions if there is a player
+    if (gameState.players[socket.id]) {
+      player.chatMessage = chatMessageInput;
+    }    
   });
 
   socket.on('movement', function(movement) {
