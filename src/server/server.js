@@ -47,10 +47,10 @@ const PLAYER_INITIAL_HEALTH = 100;
 const PLAYER_ATTACK_DAMAGE = 30;
 
 // // Derived from constants
-let minY = 1;
-let maxY = MAP_SIZE_TILES;
-let minX = 1;
-let maxX = MAP_SIZE_TILES;
+let minY = Math.ceil(CANVAS_WIDTH_PCT_CLIENTS / PLAYER_PERCENTAGE_CLIENT_SIZE * CANVAS_HEIGHT_PCT_WIDTH / 2);
+let maxY = MAP_SIZE_TILES - minY;
+let minX = Math.ceil(CANVAS_WIDTH_PCT_CLIENTS / PLAYER_PERCENTAGE_CLIENT_SIZE / 2);;
+let maxX = MAP_SIZE_TILES - minX;
 
 // Class Definitions
 class Player {
