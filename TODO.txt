@@ -1,27 +1,23 @@
+Solve error on form
 
-From niko tzikas to Me:  (Privately) 11:03 AM
+
+https://github.com/mozdevs/gamedev-js-tiles/blob/gh-pages/square/scroll.js
+
+Notes to take a look at
 https://phaser.io/examples/v2/tilemaps
 https://developer.mozilla.org/en-US/docs/Games/Techniques/Tilemaps
-From Me to niko tzikas:  (Privately) 11:08 AM
 https://ironhack-p1-multiplayer-game.herokuapp.com/
-From Me to niko tzikas:  (Privately) 11:16 AM
 https://github.com/dcatanzaro/argentumonlineweb-cliente/blob/master/public/static/graficos/6005.png
-From niko tzikas to Me:  (Privately) 11:27 AM
 https://github.com/ao-libre/ao-cliente/tree/master/Graficos
 https://github.com/ao-libre/ao-cliente/tree/master/Mapas
 https://stackoverflow.com/questions/21844451/render-a-tile-map-using-javascript
-From niko tzikas to Me:  (Privately) 11:38 AM
 https://github.com/dcatanzaro/argentumonlineweb-cliente/blob/master/engine/engine.js
-From niko tzikas to Me:  (Privately) 03:37 PM
 https://doc.mapeditor.org/en/stable/reference/json-map-format/
-From niko tzikas to Me:  (Privately) 03:49 PM
 https://www.mapeditor.org/
-From niko tzikas to Me:  (Privately) 04:10 PM
 https://github.com/rtroncoso/Argentum-Online-JS/tree/master/src'
 https://github.com/rtroncoso/Argentum-Online-JS/tree/master/src
 https://www.catch.jp/wiki3/tools/phaser_and_tiled.en
 https://codesandbox.io/s/qqq47wqv3w?file=/index.html:116-117
 https://itch.io/game-assets/free/tag-tilemap
-From niko tzikas to Me:  (Privately) 04:38 PM
 https://developer.mozilla.org/en-US/docs/Games/Techniques/Tilemaps
 https://github.com/mozdevs/gamedev-js-tiles

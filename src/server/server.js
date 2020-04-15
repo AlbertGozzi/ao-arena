@@ -41,6 +41,7 @@ const PLAYER_PERCENTAGE_CLIENT_SIZE = 0.02;
 const MAP_SIZE_TILES = 100;
 const GAME_CONSOLE_MAX_MESSAGES = 7;
 const MAP_NUMBER = 14;
+const TEAMS = ['red', 'yellow']; // Visuals might now work properly with more than three teams
 
 // Constants (just for server)
 const PLAYER_INITIAL_HEALTH = 100;
@@ -49,7 +50,7 @@ const PLAYER_ATTACK_DAMAGE = 30;
 // // Derived from constants
 let minY = Math.ceil(CANVAS_WIDTH_PCT_CLIENTS / PLAYER_PERCENTAGE_CLIENT_SIZE * CANVAS_HEIGHT_PCT_WIDTH / 2);
 let maxY = MAP_SIZE_TILES - minY;
-let minX = Math.ceil(CANVAS_WIDTH_PCT_CLIENTS / PLAYER_PERCENTAGE_CLIENT_SIZE / 2);;
+let minX = Math.ceil(CANVAS_WIDTH_PCT_CLIENTS / PLAYER_PERCENTAGE_CLIENT_SIZE / 2);
 let maxX = MAP_SIZE_TILES - minX;
 
 // Class Definitions
@@ -60,6 +61,9 @@ class Player {
 
     // Socket Id
     this.socketId = socketId;
+
+    // Team
+    this.team = this.pickRandomTeam();
 
     // Position
     this.x = MAP_SIZE_TILES / 2;
@@ -88,6 +92,45 @@ class Player {
     // Stats
     this.kills = 0;
     this.deaths = 0;
+  }
+
+  pickRandomTeam() {
+    // Intialize player count
+    let numberPlayers = {};
+    TEAMS.forEach((teamName) => numberPlayers[teamName] = 0);
+
+    // Count players in each team
+    for (const socketId in gameState.players) {
+      numberPlayers[gameState.players[socketId].team] += 1; 
+    }
+
+    // console.log(numberPlayers);
+
+    // Get team with lowest players
+    let teamsWithFewerPlayers = [];
+    let playerMinimum = Infinity;
+    TEAMS.forEach((teamName) => {
+      // console.log(`Team ${teamName} Number: ${numberPlayers[teamName]}`);
+      switch (true) {
+        case (numberPlayers[teamName] > playerMinimum): break;
+        case (numberPlayers[teamName] === playerMinimum): teamsWithFewerPlayers.push(teamName); break;
+        case (numberPlayers[teamName] < playerMinimum): 
+          teamsWithFewerPlayers = []; 
+          teamsWithFewerPlayers.push(teamName);
+          playerMinimum = numberPlayers[teamName];
+          break;
+        default:
+          break;
+      }
+    });
+
+    // console.log(teamsWithFewerPlayers);
+
+    // Assign to random selection of lower players teams
+    let randomTeamIndex = Math.floor(Math.random() * teamsWithFewerPlayers.length);
+    let randomTeam = teamsWithFewerPlayers[randomTeamIndex];
+
+    return randomTeam;
   }
 
   positionRandomly() {
@@ -129,6 +172,13 @@ class Player {
     if (targetPlayerId !== null && this.health > 0) {
       let targetPlayer = gameState.players[targetPlayerId];
       let randomAttackCoefficient = 0.8 + Math.random() * 0.4;
+
+      // Prevent you from attacking someone from your same team
+      if (targetPlayer.team === this.team) {
+        this.gameConsoleLog(`You're trying to attack ${targetPlayer.name}, who is in your same team. You can't do that!`);
+        return;
+      }
+
       let attackDamage = Math.floor(this.attackDamage * randomAttackCoefficient);
       targetPlayer.health -= attackDamage;
 
