@@ -41,7 +41,7 @@ const PLAYER_PERCENTAGE_CLIENT_SIZE = 0.02;
 const MAP_SIZE_TILES = 100;
 const GAME_CONSOLE_MAX_MESSAGES = 7;
 const MAP_NUMBER = 14;
-const TEAMS = ['red', 'yellow']; // Visuals might now work properly with more than three teams
+const TEAMS = ['red', 'yellow', 'green']; // Visuals might now work properly with more than three teams
 
 // Constants (just for server)
 const PLAYER_INITIAL_HEALTH = 100;
@@ -133,8 +133,8 @@ class Player {
     return randomTeam;
   }
 
-  positionRandomly() {
-    let position = randomPosition();
+  positionRandomly(player) {
+    let position = randomPosition(player);
     this.x = position.x;
     this.y = position.y;
   }
@@ -189,7 +189,7 @@ class Player {
 
         // Respawn
         gameState.map.reset(targetPlayer);
-        targetPlayer.positionRandomly();
+        targetPlayer.positionRandomly(targetPlayer);
         gameState.map.update(targetPlayer);
         targetPlayer.health = PLAYER_INITIAL_HEALTH;
         
@@ -240,15 +240,27 @@ class State {
   }
 }
 
-const randomPosition = () => {
+const randomPosition = (player) => {
+  let xCenter = MAP_SIZE_TILES / 2;
+  let yCenter = MAP_SIZE_TILES / 2;
+  let diagonalDistanceFromCenter = 25;
+
+  let numberTeams = TEAMS.length;
+  let radians = 2 * Math.PI;
+
+  let angleTeam = TEAMS.indexOf(player.team) * radians / numberTeams;
+
+  let xCenterTeam = xCenter + Math.ceil(Math.sin(angleTeam) * diagonalDistanceFromCenter);
+  let yCenterTeam = yCenter + Math.ceil(Math.cos(angleTeam) * diagonalDistanceFromCenter);
+  
   let randomPos = {
-    x: MAP_SIZE_TILES / 2 - 5 + Math.ceil(Math.random() * 10),
-    y: MAP_SIZE_TILES / 2 - 5 + Math.ceil(Math.random() * 10)
+    x: xCenterTeam - 3 + Math.ceil(Math.random() * 6),
+    y: yCenterTeam - 3 + Math.ceil(Math.random() * 6)
   };
   if (!gameState.map.blockedPositions[randomPos.x][randomPos.y]) {
     return randomPos;
   } else {
-    return randomPosition();
+    return randomPosition(player);
   }
 };
 
@@ -269,7 +281,7 @@ io.on('connection', function(socket) {
     gameState.players[socket.id] = new Player(playerName, socket.id);
     let player = gameState.players[socket.id];
     gameState.map.reset(player);
-    player.positionRandomly();
+    player.positionRandomly(player);
     gameState.map.update(player);
     console.log(`Connected ${socket.id}`);
   });

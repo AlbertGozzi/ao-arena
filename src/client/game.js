@@ -8,7 +8,7 @@ const PLAYER_PERCENTAGE_CLIENT_SIZE = 0.02;
 const MAP_SIZE_TILES = 100;
 const GAME_CONSOLE_MAX_MESSAGES = 8;
 const MAP_NUMBER = 14;
-const TEAMS = ['red', 'yellow'];
+const TEAMS = ['red', 'yellow', 'green'];
 // let gameConsoleNumMessages = Math.floor(gameConsole.clientHeight / 18); // TODO replace for font size
 
 
