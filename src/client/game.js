@@ -251,10 +251,10 @@ const loadSpell = (statsCanvas, event) => {
 
   if (mouseInVolumeButton) {
     if (musicPlaying) {
-      // document.getElementById('game-music').pause();  
+      document.getElementById('game-music').pause();  
       musicPlaying = false;
     } else {
-      // document.getElementById('game-music').play();
+      document.getElementById('game-music').play();
       musicPlaying = true;
     }
   }
@@ -655,8 +655,8 @@ const createPlayer = () => {
     socket.emit('new player', playerNameInput.value);
 
     //Stop intro music and start game music
-    // document.getElementById('intro-music').pause();
-    // document.getElementById('game-music').play();
+    document.getElementById('intro-music').pause();
+    document.getElementById('game-music').play();
     musicPlaying = true;
   
     //Remove login area
