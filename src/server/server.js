@@ -261,6 +261,8 @@ class Player {
         this.gameConsoleLog(`You cast a spell on ${targetPlayer.name} and caused ${spellDamage} points of damage.`);
         targetPlayer.gameConsoleLog(`${this.name} cast a spell on you and caused ${spellDamage} points of damage. Your health is now ${targetPlayer.health}`);  
       }
+    } else {
+      this.gameConsoleLog(`You tried to cast a spell but you missed!`);
     }
   }
 

@@ -185,10 +185,10 @@ for (let i = 0; i < numSpellImages; i++) {
 let movement = '';
 document.addEventListener('keydown', (event) => {
   switch (true) {
-      case (event.keyCode === 37 || event.keyCode === 65): movement = 'left'; break;
-      case (event.keyCode === 38 || event.keyCode === 87): movement = 'up'; break;
-      case (event.keyCode === 39 || event.keyCode === 68): movement = 'right'; break;
-      case (event.keyCode === 40 || event.keyCode === 83): movement = 'down'; break;
+      case (event.keyCode === 37 || (event.keyCode === 65 && chatMessageTextbox.style.visibility = 'hidden')): movement = 'left'; break;
+      case (event.keyCode === 38 || (event.keyCode === 87 && chatMessageTextbox.style.visibility = 'hidden')): movement = 'up'; break;
+      case (event.keyCode === 39 || (event.keyCode === 68 && chatMessageTextbox.style.visibility = 'hidden')): movement = 'right'; break;
+      case (event.keyCode === 40 || (event.keyCode === 83 && chatMessageTextbox.style.visibility = 'hidden')): movement = 'down'; break;
   }   
 });
 
@@ -685,14 +685,14 @@ setInterval(function() {
   // Pass and reset movement
   socket.emit('movement', movement);
   movement = '';
-}, 180 );
+}, 220 );
 
 // Chat 
 setInterval(function() {
   // Pass and reset movement
   socket.emit('new chat message', chatMessageInput);
   // movement = '';
-}, 180 );
+}, 220 );
 
 // Resize canvas
 window.addEventListener('resize', (e) => {
