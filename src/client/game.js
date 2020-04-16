@@ -10,6 +10,18 @@ const GAME_CONSOLE_MAX_MESSAGES = 8;
 const MAP_NUMBER = 14;
 const TEAMS = ['red', 'blue'];
 
+// Constants (only here)
+const bodyImgFile = {
+  red: "/public/static/graficos/67.png",
+  blue: "/public/static/graficos/64.png",
+  green: "/public/static/graficos/187.png"
+};
+const headImgFile = {
+  red: "/public/static/graficos/2064.png",
+  blue: "/public/static/graficos/2064.png",
+  green: "/public/static/graficos/2064.png"
+};
+
 // Main Code
 let canvas = document.getElementById('canvas');
 let context = canvas.getContext('2d');
@@ -518,9 +530,7 @@ const wrapText = (context, text, x, y, maxWidth, lineHeight) => {
   });
 };
 
-// Load player images and define draw function
-let head = new Image ();
-head.src = "/public/assets/2064.png";
+// Draw player
 const drawPlayer = (player, playerSize, deltaDisplayX, deltaDisplayY) => {
   // Get display values
   // Get x and y
@@ -532,29 +542,46 @@ const drawPlayer = (player, playerSize, deltaDisplayX, deltaDisplayY) => {
   // context.fillStyle = 'white';
   // context.fillRect(playerDisplayX, playerDisplayY, playerWidth, playerHeight);
 
-  let imgIndex = 0;
+  let imgIndexHead = 0;
+  let imgIndexBody = 0;
   switch (true) {
-    case (player.facing === 'down'): imgIndex = 1; break;
-    case (player.facing === 'right'): imgIndex = 2; break;
-    case (player.facing === 'left'): imgIndex = 3; break;
-    case (player.facing === 'up'): imgIndex = 4; break;
-    default: imgIndex = 1;
+    case (player.facing === 'down'): imgIndexHead = 1; imgIndexBody = 1; break;
+    case (player.facing === 'right'): imgIndexHead = 2; imgIndexBody = 4; break;
+    case (player.facing === 'left'): imgIndexHead = 3; imgIndexBody = 3; break;
+    case (player.facing === 'up'): imgIndexHead = 4; imgIndexBody = 2; break;
+    default: imgIndexHead = 1; imgIndexBody = 1;
   }
 
+  // Draw body
+  let body = new Image ();
+  body.src = bodyImgFile[player.team];
+  let bodyHeight = body.naturalHeight / 4; 
+  let bodyWidth = body.naturalWidth / 6;
+  let bodyX = playerDisplayX + playerSize / 2 - bodyWidth / 2;
+  let bodyY = playerDisplayY + playerSize - bodyHeight;
+  context.drawImage(body, 0, bodyHeight * (imgIndexBody - 1), bodyWidth, bodyHeight, bodyX, bodyY, bodyWidth, bodyHeight);
+
   // Draw head
-  context.drawImage(head, head.naturalWidth / 4 * (imgIndex - 1), 0, head.naturalWidth / 4, head.naturalHeight / 2.5, playerDisplayX, playerDisplayY, playerWidth, playerHeight);
+  let head = new Image ();
+  head.src = headImgFile[player.team];
+  let headHeight = head.naturalHeight / 2.5; 
+  let headWidth = head.naturalWidth / 4;
+  let headX = playerDisplayX + playerSize / 2 - headWidth / 2;
+  let headY = bodyY - headHeight * 0.3;
+  context.drawImage(head, headWidth * (imgIndexHead - 1), 0, headWidth, headHeight, headX, headY, headWidth, headHeight);
+
   // Draw name
-  context.fillStyle = player.team;
+  context.fillStyle = 'white';
   context.textAlign = 'center';
   context.textBaseline = 'top';
   context.font = "600 13px Arial";
-  context.fillText(`< ${player.name} >`, playerDisplayX + playerSize / 2, playerDisplayY + playerSize * 1.3);
+  context.fillText(`< ${player.name} >`, playerDisplayX + playerSize / 2, playerDisplayY + playerSize * 1.1);
   // Draw message
   context.fillStyle = 'white';
   context.textAlign = 'center';
   context.textBaseline = 'bottom';
   context.font = "600 13px Arial";
-  wrapText(context, player.chatMessage, playerDisplayX + playerSize / 2, playerDisplayY - playerSize * 0.3, 10 * playerSize, 15 );
+  wrapText(context, player.chatMessage, playerDisplayX + playerSize / 2, playerDisplayY - playerSize * 0.5, 10 * playerSize, 15 );
 };
 
 // const drawBlockedPositions = (gameState, playerSize, deltaDisplayX, deltaDisplayY) => {
@@ -664,7 +691,9 @@ socket.on('state', function(gameState) {
       // console.log(`Rendering background`);
       // console.log(playerSize);
       // console.log(`DeltaX ${deltaDisplayX}, DeltaY ${deltaDisplayY}`)
+
       renderBackground(currentPlayer, playerSize, deltaDisplayX, deltaDisplayY);
+
       // drawBlockedPositions(gameState, playerSize, deltaDisplayX, deltaDisplayY);
       lastUpdatedX = currentPlayer.x;
       lastUpdatedY = currentPlayer.y;
