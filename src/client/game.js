@@ -183,12 +183,13 @@ for (let i = 0; i < numSpellImages; i++) {
 ////////////////// Listen for inputs //////////////////
 // Update movement on arrow keys
 let movement = '';
+let chatMessageOpen = false;
 document.addEventListener('keydown', (event) => {
   switch (true) {
-      case (event.keyCode === 37 || (event.keyCode === 65 && chatMessageTextbox.style.visibility === 'hidden')): movement = 'left'; break;
-      case (event.keyCode === 38 || (event.keyCode === 87 && chatMessageTextbox.style.visibility === 'hidden')): movement = 'up'; break;
-      case (event.keyCode === 39 || (event.keyCode === 68 && chatMessageTextbox.style.visibility === 'hidden')): movement = 'right'; break;
-      case (event.keyCode === 40 || (event.keyCode === 83 && chatMessageTextbox.style.visibility === 'hidden')): movement = 'down'; break;
+      case (event.keyCode === 37 || (event.keyCode === 65 && !chatMessageOpen)): movement = 'left'; break;
+      case (event.keyCode === 38 || (event.keyCode === 87 && !chatMessageOpen)): movement = 'up'; break;
+      case (event.keyCode === 39 || (event.keyCode === 68 && !chatMessageOpen)): movement = 'right'; break;
+      case (event.keyCode === 40 || (event.keyCode === 83 && !chatMessageOpen)): movement = 'down'; break;
   }   
 });
 
@@ -322,11 +323,13 @@ document.addEventListener('keydown', (event) => {
 
       // Hide
       chatMessageTextbox.style.visibility = 'hidden';
+      chatMessageOpen = false;
     } else {
       // console.log(`1st`)
       chatMessageTextbox.style.display = 'block';
       // console.log(`2nd`)
       chatMessageTextbox.style.visibility = 'visible';
+      chatMessageOpen = true;
       // console.log(`3rd`)
       chatMessageTextbox.focus(); 
     }
@@ -618,7 +621,7 @@ const drawPlayer = (player, playerSize, deltaDisplayX, deltaDisplayY) => {
   context.textAlign = 'center';
   context.textBaseline = 'bottom';
   context.font = "600 13px Arial";
-  wrapText(context, player.chatMessage, playerDisplayX + playerSize / 2, playerDisplayY - playerSize * 0.5, 10 * playerSize, 15 );
+  wrapText(context, player.chatMessage, playerDisplayX + playerSize / 2, playerDisplayY - playerSize * 0.3, 10 * playerSize, 15 );
 
   //Draw spell if any
   if (player.counter >= 1 && player.counter <= NUM_SPELL_IMAGES ) {

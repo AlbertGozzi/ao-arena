@@ -240,7 +240,7 @@ class Player {
 
       let spellDamage = Math.floor(this.spellDamage * randomAttackCoefficient);
       targetPlayer.health -= spellDamage;
-      targetPlayer.receivingSpell = 1;
+      if (targetPlayer.health > 0) {targetPlayer.receivingSpell = 1;}
       this.mana -= SPELL_MANA;
 
       // If death, respawn
@@ -306,7 +306,7 @@ class State {
 const randomPosition = (player) => {
   let xCenter = MAP_SIZE_TILES / 2;
   let yCenter = MAP_SIZE_TILES / 2;
-  let diagonalDistanceFromCenter = 2;
+  let diagonalDistanceFromCenter = 25;
 
   let numberTeams = TEAMS.length;
   let radians = 2 * Math.PI;
@@ -367,7 +367,7 @@ setInterval(function() {
     // Update counters for animation
     for (const socketId in gameState.players) {
       let player = gameState.players[socketId]; 
-      if (player.receivingSpell === 1) { 
+      if (player.receivingSpell === 1 ) { 
         player.counter = 0.9; 
         player.receivingSpell = 0;
       }

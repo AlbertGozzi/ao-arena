@@ -1,6 +1,3 @@
-Solve error on form
-
-
 https://github.com/mozdevs/gamedev-js-tiles/blob/gh-pages/square/scroll.js
 
 Notes to take a look at
