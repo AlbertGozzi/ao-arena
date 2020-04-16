@@ -43,6 +43,7 @@ const MAP_SIZE_TILES = 100;
 const GAME_CONSOLE_MAX_MESSAGES = 7;
 const MAP_NUMBER = 14;
 const TEAMS = ['red', 'blue']; // Visuals might now work properly with more than three teams
+const NUM_SPELL_IMAGES = 19;
 
 // Constants (just for server)
 const PLAYER_INITIAL_HEALTH = 100;
@@ -84,7 +85,7 @@ class Player {
     };
 
     // In-game console messages
-    this.gameConsoleArray = [];
+    this.gameConsoleArray = [`Welcome to the AO Arena! Your goal is to kill players from other teams by attacking or casting spells on them`, `Move with the arrow keys, attack with shift or control, and cast a spell with your mouse.`, `You can also press 'Enter' to start chatting with other players.`,`--------------------------------------------------------------------------------------------------------------`];
 
     // In-game chat
     this.chatMessage = '';
@@ -92,12 +93,14 @@ class Player {
     // Fighting
     this.initialHealth = PLAYER_INITIAL_HEALTH;
     this.health = PLAYER_INITIAL_HEALTH;
-
     this.initialMana = PLAYER_INITIAL_MANA;
     this.mana = PLAYER_INITIAL_MANA;
     this.spellDamage = PLAYER_ATTACK_DAMAGE;
-
     this.attackDamage = PLAYER_ATTACK_DAMAGE;
+
+    // Animation
+    this.receivingSpell = 0;
+    this.counter = 0;
 
     // Stats
     this.kills = 0;
@@ -237,6 +240,7 @@ class Player {
 
       let spellDamage = Math.floor(this.spellDamage * randomAttackCoefficient);
       targetPlayer.health -= spellDamage;
+      targetPlayer.receivingSpell = 1;
       this.mana -= SPELL_MANA;
 
       // If death, respawn
@@ -300,7 +304,7 @@ class State {
 const randomPosition = (player) => {
   let xCenter = MAP_SIZE_TILES / 2;
   let yCenter = MAP_SIZE_TILES / 2;
-  let diagonalDistanceFromCenter = 25;
+  let diagonalDistanceFromCenter = 2;
 
   let numberTeams = TEAMS.length;
   let radians = 2 * Math.PI;
@@ -355,8 +359,20 @@ setInterval(function() {
 
 ////////////////// Server <> Client //////////////////
 // Send message to client
+
 setInterval(function() {
     io.sockets.emit('state', gameState);
+    // Update counters for animation
+    for (const socketId in gameState.players) {
+      let player = gameState.players[socketId]; 
+      if (player.receivingSpell === 1) { 
+        player.counter = 0.9; 
+        player.receivingSpell = 0;
+      }
+      if (player.counter >= 0.9 && player.counter <= NUM_SPELL_IMAGES ) {
+        player.counter += 0.2;
+      } 
+    }
   }, 1000 / 60);
   
 // Respond to messages

@@ -9,6 +9,7 @@ const MAP_SIZE_TILES = 100;
 const GAME_CONSOLE_MAX_MESSAGES = 8;
 const MAP_NUMBER = 14;
 const TEAMS = ['red', 'blue'];
+const NUM_SPELL_IMAGES = 19;
 
 // Constants (only here)
 const bodyImgFile = {
@@ -34,6 +35,7 @@ let statsContext = statsCanvas.getContext('2d');
 
 // Boolean to see if game has started
 let playerCreated = false;
+
 
 // Reset size of canvas
 const updateCanvas = () => {
@@ -169,6 +171,15 @@ console.log(`Loading graphics...`);
 inits.loadGraphics();
 // console.timeEnd();
 
+// Loading spell images
+let spellStart = 3002;
+let numSpellImages = NUM_SPELL_IMAGES;
+let spellImages = [];
+for (let i = 0; i < numSpellImages; i++) {
+  spellImages[i] = new Image ();
+  spellImages[i].src = `/public/static/graficos/${spellStart + i}.png`;
+}
+
 ////////////////// Listen for inputs //////////////////
 // Update movement on arrow keys
 let movement = '';
@@ -195,6 +206,7 @@ let castedSpell = {
   y: -1,
   active: false
 };
+let musicPlaying = false;
 
 
 const loadSpell = (statsCanvas, event) => {
@@ -212,18 +224,42 @@ const loadSpell = (statsCanvas, event) => {
   // console.log(`buttonX: ${buttonX}-${buttonX + buttonWidth}, buttonY: ${buttonY}-${buttonY + buttonHeight}`);
 
   // Boolean to say if you clicked on button
-  let mouseInButton = (
+  let mouseInSpellButton = (
     x >= buttonX &&
     x <= buttonX + buttonWidth &&
     y >= buttonY &&
     y <= buttonY + buttonHeight
   );
 
-  if (mouseInButton) {
+  if (mouseInSpellButton) {
     document.body.style.cursor = 'url(/public/assets/ui/cursor-crosshair.png), auto';
     loadedSpell = true;
   }
-  console.log(mouseInButton);
+
+  // Get mouse volume rectangle
+  let volumeButtonX = statsCanvas.width * 0.87;
+  let volumeButtonY = statsCanvas.height * 0.04;
+  let volumeButtonWidth = statsCanvas.width * 0.06; 
+  let volumeButtonHeight = volumeButtonWidth;
+
+  let mouseInVolumeButton = (
+    x >= volumeButtonX &&
+    x <= volumeButtonX + volumeButtonWidth &&
+    y >= volumeButtonY &&
+    y <= volumeButtonY + volumeButtonHeight
+  );
+
+  if (mouseInVolumeButton) {
+    if (musicPlaying) {
+      // document.getElementById('game-music').pause();  
+      musicPlaying = false;
+    } else {
+      // document.getElementById('game-music').play();
+      musicPlaying = true;
+    }
+  }
+
+  // console.log(mouseInVolumeButton);
 };
 
 statsCanvas.addEventListener('click', function(e) {
@@ -255,7 +291,7 @@ const castSpell = (canvas, event) => {
 };
 
 canvas.addEventListener('click', function(e) {
-  console.log(`Clicked on canvas`);
+  // console.log(`Clicked on canvas`);
   castSpell(canvas, e);
 });
 
@@ -339,7 +375,7 @@ const drawTeam = (player) => {
 const drawCastSpell = () => {
   statsContext.fillStyle = 'darkred';
   let buttonX = statsCanvas.width * 0.24 - 10;
-  let buttonY = statsCanvas.height * 0.73;
+  let buttonY = statsCanvas.height * 0.737;
   let buttonWidth = statsCanvas.width * 0.265; 
   let buttonHeight = statsCanvas.height * 0.042;
   // statsContext.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
@@ -355,8 +391,8 @@ const drawCastSpell = () => {
 const drawHealth = (player) => {
   statsContext.fillStyle = 'darkred';
   let barX = statsCanvas.width * 0.235;
-  let barY = statsCanvas.height * 0.861;
-  let barFullWidth = statsCanvas.width * 0.295; 
+  let barY = statsCanvas.height * 0.869;
+  let barFullWidth = statsCanvas.width * 0.297; 
   let barWidth = barFullWidth * player.health / player.initialHealth;
   let barHeight = statsCanvas.height * 0.019;
   statsContext.fillRect(barX, barY, barWidth, barHeight);
@@ -372,8 +408,8 @@ const drawHealth = (player) => {
 const drawMana = (player) => {
   statsContext.fillStyle = 'blue';
   let barX = statsCanvas.width * 0.235;
-  let barY = statsCanvas.height * 0.8;
-  let barFullWidth = statsCanvas.width * 0.295; 
+  let barY = statsCanvas.height * 0.808;
+  let barFullWidth = statsCanvas.width * 0.297; 
   let barWidth = barFullWidth * player.mana / player.initialMana;
   let barHeight = statsCanvas.height * 0.019;
   statsContext.fillRect(barX, barY, barWidth, barHeight);
@@ -391,8 +427,8 @@ const drawMiniMap = (player) => {
   img.src = `public/static/imgs_mapas/${MAP_NUMBER}.png`;
 
   // Draw map
-  let imgX = statsCanvas.width * 0.605;
-  let imgY = statsCanvas.height * 0.76;
+  let imgX = statsCanvas.width * 0.610;
+  let imgY = statsCanvas.height * 0.771;
   let imgSize = statsCanvas.height * 0.123;
   statsContext.drawImage(img, imgX, imgY, imgSize, imgSize);
 
@@ -576,12 +612,22 @@ const drawPlayer = (player, playerSize, deltaDisplayX, deltaDisplayY) => {
   context.textBaseline = 'top';
   context.font = "600 13px Arial";
   context.fillText(`< ${player.name} >`, playerDisplayX + playerSize / 2, playerDisplayY + playerSize * 1.1);
+
   // Draw message
   context.fillStyle = 'white';
   context.textAlign = 'center';
   context.textBaseline = 'bottom';
   context.font = "600 13px Arial";
   wrapText(context, player.chatMessage, playerDisplayX + playerSize / 2, playerDisplayY - playerSize * 0.5, 10 * playerSize, 15 );
+
+  //Draw spell if any
+  if (player.counter >= 1 && player.counter <= NUM_SPELL_IMAGES ) {
+    let numImage = Math.floor(player.counter - 1);
+    let spell = spellImages[numImage];
+    let spellX = playerDisplayX + playerSize / 2 - spell.naturalWidth / 2;
+    let spellY = playerDisplayY + playerSize - spell.naturalHeight;
+    context.drawImage(spell, spellX, spellY, spell.naturalWidth, spell.naturalHeight);
+  }
 };
 
 // const drawBlockedPositions = (gameState, playerSize, deltaDisplayX, deltaDisplayY) => {
@@ -611,6 +657,7 @@ const createPlayer = () => {
     //Stop intro music and start game music
     // document.getElementById('intro-music').pause();
     // document.getElementById('game-music').play();
+    musicPlaying = true;
   
     //Remove login area
     let overlay = document.getElementById('overlay');
