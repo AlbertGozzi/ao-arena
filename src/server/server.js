@@ -85,7 +85,7 @@ class Player {
     };
 
     // In-game console messages
-    this.gameConsoleArray = [`Welcome to the AO Arena! Your goal is to kill players from other teams by attacking or casting spells on them`, `Move with the arrow keys, attack with shift or control, and cast a spell with your mouse.`, `You can also press 'Enter' to start chatting with other players.`,`--------------------------------------------------------------------------------------------------------------`];
+    this.gameConsoleArray = [`Welcome to the AO Arena! Your goal is to kill players from other teams by attacking or casting spells on them`, `Move with the arrow keys or 'WASD', attack with 'Shift' or 'Control', and cast a spell pointing with your mouse.`, `You can also press 'Enter' to start chatting with other players.`,`--------------------------------------------------------------------------------------------------------------`];
 
     // In-game chat
     this.chatMessage = '';
