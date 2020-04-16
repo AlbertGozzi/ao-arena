@@ -185,10 +185,10 @@ for (let i = 0; i < numSpellImages; i++) {
 let movement = '';
 document.addEventListener('keydown', (event) => {
   switch (true) {
-      case (event.keyCode === 37 || (event.keyCode === 65 && chatMessageTextbox.style.visibility = 'hidden')): movement = 'left'; break;
-      case (event.keyCode === 38 || (event.keyCode === 87 && chatMessageTextbox.style.visibility = 'hidden')): movement = 'up'; break;
-      case (event.keyCode === 39 || (event.keyCode === 68 && chatMessageTextbox.style.visibility = 'hidden')): movement = 'right'; break;
-      case (event.keyCode === 40 || (event.keyCode === 83 && chatMessageTextbox.style.visibility = 'hidden')): movement = 'down'; break;
+      case (event.keyCode === 37 || (event.keyCode === 65 && chatMessageTextbox.style.visibility === 'hidden')): movement = 'left'; break;
+      case (event.keyCode === 38 || (event.keyCode === 87 && chatMessageTextbox.style.visibility === 'hidden')): movement = 'up'; break;
+      case (event.keyCode === 39 || (event.keyCode === 68 && chatMessageTextbox.style.visibility === 'hidden')): movement = 'right'; break;
+      case (event.keyCode === 40 || (event.keyCode === 83 && chatMessageTextbox.style.visibility === 'hidden')): movement = 'down'; break;
   }   
 });
 
