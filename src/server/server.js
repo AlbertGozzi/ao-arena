@@ -4,6 +4,7 @@ let http = require('http');
 let path = require('path');
 let socketIO = require('socket.io');
 let fs = require('fs');
+let axios = require('axios');
 
 // Renaming
 let app = express();
@@ -41,11 +42,15 @@ const PLAYER_PERCENTAGE_CLIENT_SIZE = 0.02;
 const MAP_SIZE_TILES = 100;
 const GAME_CONSOLE_MAX_MESSAGES = 7;
 const MAP_NUMBER = 14;
-const TEAMS = ['red', 'yellow', 'green']; // Visuals might now work properly with more than three teams
+const TEAMS = ['red', 'blue']; // Visuals might now work properly with more than three teams
 
 // Constants (just for server)
 const PLAYER_INITIAL_HEALTH = 100;
 const PLAYER_ATTACK_DAMAGE = 30;
+const PLAYER_INITIAL_MANA = 50;
+const SPELL_MANA = 25;
+const MANA_INCREMENT = 10;
+const MANA_INCREMENT_TIME_MS = 3000;
 
 // // Derived from constants
 let minY = Math.ceil(CANVAS_WIDTH_PCT_CLIENTS / PLAYER_PERCENTAGE_CLIENT_SIZE * CANVAS_HEIGHT_PCT_WIDTH / 2);
@@ -87,6 +92,11 @@ class Player {
     // Fighting
     this.initialHealth = PLAYER_INITIAL_HEALTH;
     this.health = PLAYER_INITIAL_HEALTH;
+
+    this.initialMana = PLAYER_INITIAL_MANA;
+    this.mana = PLAYER_INITIAL_MANA;
+    this.spellDamage = PLAYER_ATTACK_DAMAGE;
+
     this.attackDamage = PLAYER_ATTACK_DAMAGE;
 
     // Stats
@@ -203,6 +213,53 @@ class Player {
     }
   }
 
+  castSpell(x, y) {
+    // console.log(`Casting spell from ${this.name} on x: ${x} y: ${y}`);
+    let targetPlayerId = gameState.map.playerIds[x][y];
+    // console.log(gameState.players[targetPlayerId]);
+
+    // Only attack if you're attacking someone and you're alive
+    if (targetPlayerId !== null && this.health > 0) {
+      let targetPlayer = gameState.players[targetPlayerId];
+      let randomAttackCoefficient = 0.8 + Math.random() * 0.4;
+
+      // Prevent you from attacking someone from your same team
+      if (targetPlayer.team === this.team) {
+        this.gameConsoleLog(`You're trying to cast a spell on ${targetPlayer.name}, who is in your same team. You can't do that!`);
+        return;
+      }
+
+      // Prevent you from attacking if you don't have enough mana
+      if (this.mana < SPELL_MANA) {
+        this.gameConsoleLog(`You don't have enough mana to attack cast a spell!`);
+        return;
+      }
+
+      let spellDamage = Math.floor(this.spellDamage * randomAttackCoefficient);
+      targetPlayer.health -= spellDamage;
+      this.mana -= SPELL_MANA;
+
+      // If death, respawn
+      if (targetPlayer.health <= 0) {
+        targetPlayer.gameConsoleLog(`${this.name} casted a spell on you and caused ${spellDamage} points of damage. You're dead!`);
+        this.gameConsoleLog(`You casted a spell on ${targetPlayer.name} and caused ${spellDamage} points of damage. You killed him/her!`);
+
+        // Respawn
+        gameState.map.reset(targetPlayer);
+        targetPlayer.positionRandomly(targetPlayer);
+        gameState.map.update(targetPlayer);
+        targetPlayer.health = PLAYER_INITIAL_HEALTH;
+        
+        // Update stats
+        targetPlayer.deaths++;
+        this.kills++;
+      } else {
+        this.gameConsoleLog(`You casted a spell on ${targetPlayer.name} and caused ${spellDamage} points of damage.`);
+        targetPlayer.gameConsoleLog(`${this.name} casted a spell on you and caused ${spellDamage} points of damage. Your health is now ${targetPlayer.health}`);  
+      }
+    }
+  }
+
   gameConsoleLog(message) {
     this.gameConsoleArray.push(message);
     if (this.gameConsoleArray.length > GAME_CONSOLE_MAX_MESSAGES) { this.gameConsoleArray.shift(); }
@@ -228,7 +285,7 @@ class State {
       },
 
       loadMap() {
-        const rawData = fs.readFileSync('public/static/mapas/mapa_14.map');
+        const rawData = fs.readFileSync(`public/static/mapas/mapa_${MAP_NUMBER}.map`);
         let map = JSON.parse(rawData).tiles;
         for (let x = 1; x <= MAP_SIZE_TILES; x++) {
           for (let y = 1; y <= MAP_SIZE_TILES; y++) {
@@ -243,7 +300,7 @@ class State {
 const randomPosition = (player) => {
   let xCenter = MAP_SIZE_TILES / 2;
   let yCenter = MAP_SIZE_TILES / 2;
-  let diagonalDistanceFromCenter = 25;
+  let diagonalDistanceFromCenter = 2;
 
   let numberTeams = TEAMS.length;
   let radians = 2 * Math.PI;
@@ -268,6 +325,33 @@ const randomPosition = (player) => {
 loadServer();
 let gameState = new State();
 gameState.map.loadMap();
+
+// Reload mana
+setInterval(function() {
+  for (const socketId in gameState.players) {
+    let player = gameState.players[socketId]; 
+    let playerMissingMana = PLAYER_INITIAL_MANA - player.mana; 
+    player.mana += Math.min(MANA_INCREMENT, playerMissingMana);
+    // console.log(`Name: ${player.name} X: ${player.x} Y: ${player.y}`);
+  }
+}, MANA_INCREMENT_TIME_MS);
+
+// Interaction with database
+// Save data
+// const postData = () => {
+//   axios.post('https://ironrest.herokuapp.com/argentum', {players: gameState.players}).then(resp => {
+//     console.log(resp.data);
+//   }) .catch(err => console.log(err))
+// };
+// postData();
+// Get data
+// const getData = () => {
+//   axios.get('https://ironrest.herokuapp.com/argentum').then(resp => {
+//     console.log(resp.data);
+//   })
+// };
+// getData();
+
 
 ////////////////// Server <> Client //////////////////
 // Send message to client
@@ -309,7 +393,15 @@ io.on('connection', function(socket) {
     // Conditional to make sure you perform actions if there is a player and if it wants to attack
     if (attack && gameState.players[socket.id]) { 
       attackingPlayer.attack();
-    }    
+    }
+  });
+
+  socket.on('cast spell', function(castedSpell) {
+    let attackingPlayer = gameState.players[socket.id] || {};
+    // Conditional to make sure you perform actions if there is a player and if it wants to attack
+    if (castedSpell.active && gameState.players[socket.id]) { 
+      attackingPlayer.castSpell(castedSpell.x, castedSpell.y);
+    }
   });
 
   socket.on('disconnect', (reason) => {

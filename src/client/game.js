@@ -8,9 +8,7 @@ const PLAYER_PERCENTAGE_CLIENT_SIZE = 0.02;
 const MAP_SIZE_TILES = 100;
 const GAME_CONSOLE_MAX_MESSAGES = 8;
 const MAP_NUMBER = 14;
-const TEAMS = ['red', 'yellow', 'green'];
-// let gameConsoleNumMessages = Math.floor(gameConsole.clientHeight / 18); // TODO replace for font size
-
+const TEAMS = ['red', 'blue'];
 
 // Main Code
 let canvas = document.getElementById('canvas');
@@ -177,6 +175,79 @@ document.addEventListener('keyup', (event) => {
   if (event.keyCode === 16 || event.keyCode === 17) { attack = true; }
 });
 
+// Attack with spell
+let loadedSpell = false;
+let currentPlayer;
+let castedSpell = {
+  x: -1,
+  y: -1,
+  active: false
+};
+
+
+const loadSpell = (statsCanvas, event) => {
+  // Get position
+  const rect = statsCanvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  // console.log("x: " + x + " y: " + y);
+
+  // Get rectangle position
+  let buttonX = statsCanvas.width * 0.24 - 10;
+  let buttonY = statsCanvas.height * 0.73;
+  let buttonWidth = statsCanvas.width * 0.265; 
+  let buttonHeight = statsCanvas.height * 0.042;
+  // console.log(`buttonX: ${buttonX}-${buttonX + buttonWidth}, buttonY: ${buttonY}-${buttonY + buttonHeight}`);
+
+  // Boolean to say if you clicked on button
+  let mouseInButton = (
+    x >= buttonX &&
+    x <= buttonX + buttonWidth &&
+    y >= buttonY &&
+    y <= buttonY + buttonHeight
+  );
+
+  if (mouseInButton) {
+    document.body.style.cursor = 'url(/public/assets/ui/cursor-crosshair.png), auto';
+    loadedSpell = true;
+  }
+  console.log(mouseInButton);
+};
+
+statsCanvas.addEventListener('click', function(e) {
+  // console.log(`Listened`);
+  loadSpell(statsCanvas, e);
+});
+
+const castSpell = (canvas, event) => {
+  if (loadedSpell) {
+    // Get position
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    // Get tile
+    let playerSize = document.documentElement.clientWidth * PLAYER_PERCENTAGE_CLIENT_SIZE;
+    let xTile = Math.ceil(x / playerSize + currentPlayer.x - canvas.width / 2 / playerSize);
+    let yTile = Math.ceil(y / playerSize + currentPlayer.y - canvas.height / 2 / playerSize);
+    // console.log(`xTile: ${xTile} yTile: ${yTile}`);
+
+
+    // Update tile and cast spell
+    castedSpell.x = xTile;
+    castedSpell.y = yTile;
+    castedSpell.active = true;
+    loadedSpell = false;
+    document.body.style.cursor = 'url(/public/assets/ui/cursor-arrow.png), auto';
+  }
+};
+
+canvas.addEventListener('click', function(e) {
+  console.log(`Clicked on canvas`);
+  castSpell(canvas, e);
+});
+
+
 // Send message
 // Define variables
 let chatMessageInput = "";
@@ -252,12 +323,27 @@ const drawTeam = (player) => {
   statsContext.fillText(`${capitalizedTeam} Team`, statsCanvas.width / 2, statsCanvas.height * 0.144);
 };
 
+// Draw cast spell
+const drawCastSpell = () => {
+  statsContext.fillStyle = 'darkred';
+  let buttonX = statsCanvas.width * 0.24 - 10;
+  let buttonY = statsCanvas.height * 0.73;
+  let buttonWidth = statsCanvas.width * 0.265; 
+  let buttonHeight = statsCanvas.height * 0.042;
+  // statsContext.fillRect(buttonX, buttonY, buttonWidth, buttonHeight);
+  
+  statsContext.fillStyle = '#aa967f';
+  statsContext.textAlign = 'center';
+  statsContext.textBaseline = 'middle';
+  statsContext.font = "600 12px Arial";
+  statsContext.fillText(`Cast Spell`, buttonX + buttonWidth / 2 + 10, buttonY + buttonHeight / 2);
+}; 
 
 // Draw health
 const drawHealth = (player) => {
   statsContext.fillStyle = 'darkred';
   let barX = statsCanvas.width * 0.235;
-  let barY = statsCanvas.height * 0.809;
+  let barY = statsCanvas.height * 0.861;
   let barFullWidth = statsCanvas.width * 0.295; 
   let barWidth = barFullWidth * player.health / player.initialHealth;
   let barHeight = statsCanvas.height * 0.019;
@@ -270,10 +356,27 @@ const drawHealth = (player) => {
   statsContext.fillText(`${player.health} / ${player.initialHealth}`, barX + barFullWidth / 2, barY + barHeight / 2);
 };
 
+// Draw mana
+const drawMana = (player) => {
+  statsContext.fillStyle = 'blue';
+  let barX = statsCanvas.width * 0.235;
+  let barY = statsCanvas.height * 0.8;
+  let barFullWidth = statsCanvas.width * 0.295; 
+  let barWidth = barFullWidth * player.mana / player.initialMana;
+  let barHeight = statsCanvas.height * 0.019;
+  statsContext.fillRect(barX, barY, barWidth, barHeight);
+  
+  statsContext.fillStyle = '#aa967f';
+  statsContext.textAlign = 'center';
+  statsContext.textBaseline = 'middle';
+  statsContext.font = "500 12px Arial";
+  statsContext.fillText(`${player.mana} / ${player.initialMana}`, barX + barFullWidth / 2, barY + barHeight / 2);
+};
+
 // Draw minimap
 const drawMiniMap = (player) => {
   const img = new Image ();
-  img.src = '/public/assets/14.png';
+  img.src = `public/static/imgs_mapas/${MAP_NUMBER}.png`;
 
   // Draw map
   let imgX = statsCanvas.width * 0.605;
@@ -486,18 +589,21 @@ const createPlayer = () => {
     let overlay = document.getElementById('overlay');
     overlay.style.display = 'none';
 
-    // Prevent from creating another one
+    // Prevent from creating one
     playerCreated = true;
   }
 };
 // To work with click
 startGameBtn.addEventListener('click', (event) => createPlayer(playerNameInput.value));
 
-// Attack
+// Attack and cast spell
 setInterval(function() {
   // Pass and reset attack
   socket.emit('attack', attack);
   attack = false;
+  // Pass and reset cast spell
+  socket.emit('cast spell', castedSpell);
+  castedSpell.active = false;
 }, 850 );
 
 // Movement
@@ -536,7 +642,7 @@ socket.on('state', function(gameState) {
 
   // Draw canvas
   // Get current player
-  let currentPlayer = gameState.players[socket.id];
+  currentPlayer = gameState.players[socket.id];
 
   // Define player size 
   let playerSize = document.documentElement.clientWidth * PLAYER_PERCENTAGE_CLIENT_SIZE;
@@ -565,12 +671,16 @@ socket.on('state', function(gameState) {
     }
   }
 
+  // Draw cast spell text
+  drawCastSpell();
+
   // Draw log and player-specific tasks
   if (currentPlayer) { 
     drawConsoleLog(currentPlayer); 
     drawName(currentPlayer); 
     drawTeam(currentPlayer);
-    drawHealth(currentPlayer);  
+    drawHealth(currentPlayer);
+    drawMana(currentPlayer);
     drawMiniMap(currentPlayer);
   }
 

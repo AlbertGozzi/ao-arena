@@ -1,16 +1,15 @@
 
 * {
     font-family: Arial, Helvetica, sans-serif;
-    cursor:url(/public/assets/ui/cursor-arrow.png), auto;
 }
 
 html, body {margin: 0; height: 100%; overflow: hidden}
 
 body {
-    /* background-image: url(/public/assets/background.jpg); */
     background-color: black;
     background-size: cover;
     display: flex;
+    cursor:url(/public/assets/ui/cursor-arrow.png), auto;
 }
 
 #overlay {
@@ -31,7 +30,6 @@ body {
     align-items: center;
 
     z-index: 2;
-
 }
 
 form {
@@ -97,6 +95,6 @@ canvas {
 
 #canvas-stats {
     margin-top: 10px;
-    background-image: url(/public/assets/ui/main-simplified-mod.jpg);
+    background-image: url(/public/assets/ui/main-simplified-mod-spells.jpg);
     background-size: contain;
 }
