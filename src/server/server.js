@@ -241,8 +241,8 @@ class Player {
 
       // If death, respawn
       if (targetPlayer.health <= 0) {
-        targetPlayer.gameConsoleLog(`${this.name} casted a spell on you and caused ${spellDamage} points of damage. You're dead!`);
-        this.gameConsoleLog(`You casted a spell on ${targetPlayer.name} and caused ${spellDamage} points of damage. You killed him/her!`);
+        targetPlayer.gameConsoleLog(`${this.name} cast a spell on you and caused ${spellDamage} points of damage. You're dead!`);
+        this.gameConsoleLog(`You cast a spell on ${targetPlayer.name} and caused ${spellDamage} points of damage. You killed him/her!`);
 
         // Respawn
         gameState.map.reset(targetPlayer);
@@ -254,8 +254,8 @@ class Player {
         targetPlayer.deaths++;
         this.kills++;
       } else {
-        this.gameConsoleLog(`You casted a spell on ${targetPlayer.name} and caused ${spellDamage} points of damage.`);
-        targetPlayer.gameConsoleLog(`${this.name} casted a spell on you and caused ${spellDamage} points of damage. Your health is now ${targetPlayer.health}`);  
+        this.gameConsoleLog(`You cast a spell on ${targetPlayer.name} and caused ${spellDamage} points of damage.`);
+        targetPlayer.gameConsoleLog(`${this.name} cast a spell on you and caused ${spellDamage} points of damage. Your health is now ${targetPlayer.health}`);  
       }
     }
   }
@@ -300,7 +300,7 @@ class State {
 const randomPosition = (player) => {
   let xCenter = MAP_SIZE_TILES / 2;
   let yCenter = MAP_SIZE_TILES / 2;
-  let diagonalDistanceFromCenter = 2;
+  let diagonalDistanceFromCenter = 25;
 
   let numberTeams = TEAMS.length;
   let radians = 2 * Math.PI;
