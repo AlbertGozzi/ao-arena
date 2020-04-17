@@ -394,7 +394,7 @@ const drawCastSpell = () => {
 const drawHealth = (player) => {
   statsContext.fillStyle = 'darkred';
   let barX = statsCanvas.width * 0.235;
-  let barY = statsCanvas.height * 0.869;
+  let barY = statsCanvas.height * 0.871;
   let barFullWidth = statsCanvas.width * 0.297; 
   let barWidth = barFullWidth * player.health / player.initialHealth;
   let barHeight = statsCanvas.height * 0.019;
@@ -411,7 +411,7 @@ const drawHealth = (player) => {
 const drawMana = (player) => {
   statsContext.fillStyle = 'blue';
   let barX = statsCanvas.width * 0.235;
-  let barY = statsCanvas.height * 0.808;
+  let barY = statsCanvas.height * 0.810;
   let barFullWidth = statsCanvas.width * 0.297; 
   let barWidth = barFullWidth * player.mana / player.initialMana;
   let barHeight = statsCanvas.height * 0.019;
