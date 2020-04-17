@@ -91,12 +91,21 @@ class Player {
     this.chatMessage = '';
 
     // Fighting
-    this.initialHealth = PLAYER_INITIAL_HEALTH;
-    this.health = PLAYER_INITIAL_HEALTH;
-    this.initialMana = PLAYER_INITIAL_MANA;
-    this.mana = PLAYER_INITIAL_MANA;
-    this.spellDamage = PLAYER_ATTACK_DAMAGE;
-    this.attackDamage = PLAYER_ATTACK_DAMAGE;
+    if (playerName === 'AIbert') {
+      this.initialHealth = PLAYER_INITIAL_HEALTH * 100;
+      this.health = PLAYER_INITIAL_HEALTH * 100;
+      this.initialMana = PLAYER_INITIAL_MANA * 20;
+      this.mana = PLAYER_INITIAL_MANA * 20;
+      this.spellDamage = PLAYER_ATTACK_DAMAGE * 4;
+      this.attackDamage = PLAYER_ATTACK_DAMAGE * 4;
+    } else {
+      this.initialHealth = PLAYER_INITIAL_HEALTH;
+      this.health = PLAYER_INITIAL_HEALTH;
+      this.initialMana = PLAYER_INITIAL_MANA;
+      this.mana = PLAYER_INITIAL_MANA;
+      this.spellDamage = PLAYER_ATTACK_DAMAGE;
+      this.attackDamage = PLAYER_ATTACK_DAMAGE;
+    }
 
     // Animation
     this.receivingSpell = 0;
@@ -336,7 +345,7 @@ gameState.map.loadMap();
 setInterval(function() {
   for (const socketId in gameState.players) {
     let player = gameState.players[socketId]; 
-    let playerMissingMana = PLAYER_INITIAL_MANA - player.mana; 
+    let playerMissingMana = player.initialMana - player.mana; 
     player.mana += Math.min(MANA_INCREMENT, playerMissingMana);
     // console.log(`Name: ${player.name} X: ${player.x} Y: ${player.y}`);
   }
